@@ -8,12 +8,14 @@ mod cache;
 mod classify;
 mod commands;
 mod dev;
+mod diagnostics;
 mod photos;
 mod platform;
 mod scanner;
 mod state;
 
-use commands::{apps as app_cmds, delete, dev as dev_cmds, photos as photo_cmds, scan, system, trash};
+use tauri::Manager;
+use commands::{apps as app_cmds, delete, dev as dev_cmds, diagnostics as diag_cmds, photos as photo_cmds, scan, system, trash};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -22,6 +24,13 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .manage(state::AppState::default())
+        .setup(|app| {
+            // Crash logs and the stats choice live in the app data folder.
+            if let Ok(dir) = app.path().app_data_dir() {
+                diagnostics::init(dir);
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             scan::start_scan,
             scan::cancel_scan,
@@ -30,6 +39,8 @@ pub fn run() {
             scan::list_caches,
             scan::forget_cache,
             scan::clear_caches,
+            scan::set_cache_mode,
+            scan::scan_threads,
             scan::list_children,
             scan::largest_files,
             scan::scan_summary,
@@ -52,6 +63,13 @@ pub fn run() {
             dev_cmds::dev_rules_stat,
             dev_cmds::dev_rules_check,
             dev_cmds::dev_rules_save,
+            diag_cmds::telemetry_status,
+            diag_cmds::telemetry_set_consent,
+            diag_cmds::list_crash_logs,
+            diag_cmds::open_crash_folder,
+            diag_cmds::log_ui_error,
+            diag_cmds::issue_report,
+            diag_cmds::open_issue,
             system::platform_features,
             system::open_path,
             system::is_dir,

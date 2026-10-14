@@ -19,11 +19,11 @@
   },
   "speed": {
     "low": "CPU baja",
-    "lowHint": "2 hilos en segundo plano en núcleos de eficiencia: la opción más lenta, apenas se nota",
     "balanced": "Equilibrada",
-    "balancedHint": "La mitad de los núcleos de la CPU",
     "fast": "Rápida",
-    "fastHint": "Todos los núcleos: termina antes, pero los ventiladores pueden acelerarse"
+    "min": "Mínimo",
+    "high": "Alto",
+    "threads": "{{count}} de {{cpus}} hilos"
   },
   "welcome": {
     "tagline": "Descubre qué ocupa espacio en tu Mac.",
@@ -44,7 +44,11 @@
     "fdaDevHint": "¿Ejecutando con <code>npm run tauri dev</code>? Concede acceso a la app que lo inició (VS Code / iTerm). Para la app compilada, haz clic en <b>+</b> y elige <code>DiskLens.app</code>.",
     "taglineOther": "Descubre qué ocupa espacio en tu ordenador.",
     "photos": "Fotos",
-    "dropHint": "Consejo: suelta una carpeta en esta ventana para analizarla."
+    "dropHint": "Consejo: suelta una carpeta en esta ventana para analizarla.",
+    "cacheInMemoryHint": "En memoria: se pierde al cerrar la app",
+    "cacheDisk": "Disco",
+    "cacheRam": "RAM",
+    "cacheRamNotice": "El disco está casi lleno, así que algunos análisis solo se guardan en RAM y se perderán al cerrar la app."
   },
   "disk": {
     "backHint": "Volver al inicio (detiene el análisis)",
@@ -142,7 +146,11 @@
     "trashNote_many": "Puedes recuperarlos desde la Papelera. Los <b>{{size}}</b> solo se liberan después de vaciar la Papelera.",
     "trashNote_other": "Puedes recuperarlos desde la Papelera. Los <b>{{size}}</b> solo se liberan después de vaciar la Papelera.",
     "riskyWarning_one": "{{count, number}} elemento ({{size}}) contiene datos de apps, correo, fotos, archivos del sistema o un historial de Git. Eliminarlo puede romper una app o perder datos.",
-    "riskyWarning_other": "{{count, number}} elementos ({{size}}) contienen datos de apps, correo, fotos, archivos del sistema o un historial de Git. Eliminarlos puede romper apps o perder datos."
+    "riskyWarning_other": "{{count, number}} elementos ({{size}}) contienen datos de apps, correo, fotos, archivos del sistema o un historial de Git. Eliminarlos puede romper apps o perder datos.",
+    "showLess": "Mostrar menos",
+    "skipHour": "No volver a preguntar durante 1 hora",
+    "sortName": "Nombre",
+    "sortSize": "Tamaño"
   },
   "apps": {
     "title": "Aplicaciones",
@@ -294,7 +302,13 @@
     "editorHint": "JSON con comentarios. Un id integrado solo cambia los campos que pongas; un id nuevo añade una regla.",
     "rulesChangedOutside": "El archivo de reglas cambió desde este análisis.",
     "inYourFile": "En tu archivo",
-    "scannedAgo": "analizado {{when}}"
+    "scannedAgo": "analizado {{when}}",
+    "filterEco": "Ecosistema",
+    "filterSafety": "Seguridad",
+    "filterAge": "Antigüedad",
+    "allLevels": "Todos los niveles",
+    "resetFilters": "Restablecer",
+    "nSelected": "{{count}} seleccionados"
   },
   "kinds": {
     "trash": "Papelera",
@@ -447,6 +461,42 @@
     "selected_other": "{{count, number}} seleccionadas · {{size}}",
     "quickLookHint": "Espacio para previsualizar · doble clic para abrir",
     "deleteForever": "Eliminar permanentemente…",
-    "moveToTrash": "Mover a la papelera…"
+    "moveToTrash": "Mover a la papelera…",
+    "view": "Ver foto",
+    "sharp": "Miniaturas nítidas",
+    "sharpHint": "Miniaturas más grandes que se ven nítidas en pantallas de alta resolución (cargan un poco más lento)",
+    "openExternal": "Abrir con la app predeterminada",
+    "close": "Cerrar",
+    "prev": "Anterior",
+    "next": "Siguiente"
+  },
+  "cacheMode": {
+    "label": "Guardar análisis en",
+    "auto": "Auto",
+    "disk": "Disco",
+    "memory": "Memoria",
+    "autoHint": "Disco, o memoria si el disco está casi lleno",
+    "diskHint": "Guardar siempre en disco",
+    "memoryHint": "Solo en memoria; se pierden al cerrar la app"
+  },
+  "report": {
+    "button": "Informar de un problema",
+    "title": "Informar de un problema",
+    "description": "Se abrirá una incidencia de GitHub ya rellenada. DiskLens no envía nada por sí mismo: lee el texto de abajo y envíalo tú.",
+    "preview": "Texto que se añade a la incidencia",
+    "crashCount": "Registros de fallos guardados en este equipo: {{count}}",
+    "noCrashes": "No se ha registrado ningún fallo.",
+    "openFolder": "Mostrar registros de fallos",
+    "copy": "Copiar texto",
+    "copied": "Copiado",
+    "openIssue": "Abrir incidencia en GitHub",
+    "attachHint": "Si DiskLens falló, adjunta a la incidencia el archivo más reciente de la carpeta de registros de fallos."
+  },
+  "stats": {
+    "title": "¿Compartir un recuento anónimo de inicios?",
+    "description": "DiskLens puede contar cuántas personas lo abren cada día. Solo envía la versión de la app y tu sistema operativo, nunca nombres de archivos, rutas ni resultados de análisis. Los registros de fallos se quedan en tu equipo y nunca se envían.",
+    "allow": "Compartir",
+    "deny": "No, gracias",
+    "toggle": "Compartir recuento anónimo de inicios"
   }
 }

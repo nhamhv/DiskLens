@@ -14,9 +14,9 @@ pub fn features() -> Features {
 pub fn set_thread_priority(speed: Speed) {
     // ioprio: class in the top bits (2 = best effort, 3 = idle), level 0-7 below.
     let (nice, ioprio) = match speed {
-        Speed::Low => (19, 3 << 13),
+        Speed::Min | Speed::Low => (19, 3 << 13),
         Speed::Balanced => (10, (2 << 13) | 7),
-        Speed::Fast => return,
+        Speed::High | Speed::Fast => return,
     };
     unsafe {
         let tid = libc::gettid();
@@ -83,6 +83,14 @@ pub fn open_privacy_settings() -> Result<(), String> {
 /// Linux has no app-level file access gate; unreadable folders are just counted as errors.
 pub fn has_full_disk_access() -> bool {
     true
+}
+
+/// "Ubuntu 24.04.1 LTS", for bug reports.
+pub fn os_version() -> String {
+    let text = std::fs::read_to_string("/etc/os-release").unwrap_or_default();
+    text.lines()
+        .find_map(|l| l.strip_prefix("PRETTY_NAME="))
+        .map_or_else(|| "Linux".into(), |v| v.trim_matches('"').to_string())
 }
 
 pub fn hidden_space() -> HiddenSpace {

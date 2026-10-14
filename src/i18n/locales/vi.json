@@ -15,11 +15,11 @@
   },
   "speed": {
     "low": "Ít CPU",
-    "lowHint": "2 luồng nền trên lõi tiết kiệm điện — chậm nhất, gần như không cảm nhận được",
     "balanced": "Cân bằng",
-    "balancedHint": "Một nửa số lõi CPU",
     "fast": "Nhanh",
-    "fastHint": "Tất cả các lõi — xong nhanh nhất, quạt có thể quay"
+    "min": "Tối thiểu",
+    "high": "Cao",
+    "threads": "{{count}} / {{cpus}} luồng"
   },
   "welcome": {
     "tagline": "Xem thứ gì đang chiếm dung lượng trên máy Mac của bạn.",
@@ -40,7 +40,11 @@
     "fdaDevHint": "Đang chạy bằng <code>npm run tauri dev</code>? Cấp quyền cho app đã khởi chạy nó (VS Code / iTerm). Với bản build, bấm <b>+</b> và chọn <code>DiskLens.app</code>.",
     "taglineOther": "Xem thứ gì đang chiếm dung lượng máy tính của bạn.",
     "photos": "Ảnh",
-    "dropHint": "Mẹo: kéo thả một thư mục vào cửa sổ này để quét."
+    "dropHint": "Mẹo: kéo thả một thư mục vào cửa sổ này để quét.",
+    "cacheInMemoryHint": "Lưu trong RAM — mất khi đóng ứng dụng",
+    "cacheDisk": "Ổ đĩa",
+    "cacheRam": "RAM",
+    "cacheRamNotice": "Ổ đĩa gần đầy nên một số kết quả quét chỉ được lưu trong RAM và sẽ mất khi đóng ứng dụng."
   },
   "disk": {
     "backHint": "Về màn hình đầu (dừng quét)",
@@ -134,7 +138,11 @@
     "donePermanentHint": "Đã giải phóng {{size}}",
     "partial": "{{done, number}} trong {{what}}",
     "failed": "{{count, number}} mục không xoá được",
-    "riskyWarning_other": "{{count, number}} mục ({{size}}) chứa dữ liệu ứng dụng, thư, ảnh, tệp hệ thống hoặc lịch sử Git. Xoá có thể làm hỏng ứng dụng hoặc mất dữ liệu."
+    "riskyWarning_other": "{{count, number}} mục ({{size}}) chứa dữ liệu ứng dụng, thư, ảnh, tệp hệ thống hoặc lịch sử Git. Xoá có thể làm hỏng ứng dụng hoặc mất dữ liệu.",
+    "showLess": "Thu gọn",
+    "skipHour": "Không hỏi lại trong 1 giờ",
+    "sortName": "Tên",
+    "sortSize": "Dung lượng"
   },
   "apps": {
     "title": "Ứng dụng",
@@ -282,7 +290,13 @@
     "editorHint": "JSON có comment. id có sẵn chỉ đổi các trường bạn đặt; id mới sẽ thêm quy tắc.",
     "rulesChangedOutside": "File quy tắc đã thay đổi từ lần quét này.",
     "inYourFile": "Trong file của bạn",
-    "scannedAgo": "quét {{when}}"
+    "scannedAgo": "quét {{when}}",
+    "filterEco": "Hệ sinh thái",
+    "filterSafety": "Mức an toàn",
+    "filterAge": "Tuổi",
+    "allLevels": "Mọi mức",
+    "resetFilters": "Đặt lại",
+    "nSelected": "Đã chọn {{count}}"
   },
   "kinds": {
     "trash": "Thùng rác",
@@ -423,6 +437,42 @@
     "selected_other": "Đã chọn {{count, number}} · {{size}}",
     "quickLookHint": "Space để xem nhanh · nhấp đúp để mở",
     "deleteForever": "Xóa vĩnh viễn…",
-    "moveToTrash": "Chuyển vào Thùng rác…"
+    "moveToTrash": "Chuyển vào Thùng rác…",
+    "view": "Xem ảnh",
+    "sharp": "Ảnh thu nhỏ sắc nét",
+    "sharpHint": "Ảnh thu nhỏ lớn hơn, không bị mờ trên màn hình độ phân giải cao (tải chậm hơn một chút)",
+    "openExternal": "Mở bằng ứng dụng mặc định",
+    "close": "Đóng",
+    "prev": "Trước",
+    "next": "Sau"
+  },
+  "cacheMode": {
+    "label": "Lưu kết quả quét vào",
+    "auto": "Tự động",
+    "disk": "Ổ đĩa",
+    "memory": "RAM",
+    "autoHint": "Lưu vào ổ đĩa, hoặc RAM khi ổ đĩa sắp đầy",
+    "diskHint": "Luôn lưu kết quả quét vào ổ đĩa",
+    "memoryHint": "Chỉ giữ trong RAM, mất khi đóng ứng dụng"
+  },
+  "report": {
+    "button": "Báo lỗi",
+    "title": "Báo lỗi",
+    "description": "Thao tác này mở một issue GitHub được điền sẵn. DiskLens không tự gửi gì: bạn đọc nội dung bên dưới và tự gửi.",
+    "preview": "Nội dung sẽ thêm vào issue",
+    "crashCount": "Số log crash đã lưu trên máy: {{count}}",
+    "noCrashes": "Chưa ghi nhận crash nào.",
+    "openFolder": "Mở thư mục log crash",
+    "copy": "Sao chép nội dung",
+    "copied": "Đã sao chép",
+    "openIssue": "Mở issue GitHub",
+    "attachHint": "Nếu DiskLens bị crash, hãy đính kèm file mới nhất trong thư mục log crash vào issue."
+  },
+  "stats": {
+    "title": "Chia sẻ số lượt mở ẩn danh?",
+    "description": "DiskLens có thể đếm mỗi ngày có bao nhiêu người mở app. Chỉ gửi phiên bản app và hệ điều hành, không bao giờ gửi tên file, đường dẫn hay kết quả quét. Log crash chỉ nằm trên máy bạn và không bao giờ được gửi đi.",
+    "allow": "Đồng ý",
+    "deny": "Không, cảm ơn",
+    "toggle": "Chia sẻ số lượt mở ẩn danh"
   }
 }

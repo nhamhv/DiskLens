@@ -76,9 +76,17 @@ export interface ScanMeta {
   cacheBytes: number;
   /** When the scan that changes are compared against ran (unix seconds). */
   prevScannedAt?: number | null;
+  /** Kept in memory instead of on disk, so it is gone when the app closes. */
+  inMemory?: boolean;
 }
 
-export type Speed = "low" | "balanced" | "fast";
+/** Where saved scans go: `auto` picks disk unless it is nearly full. */
+export type CacheMode = "auto" | "disk" | "memory";
+
+export type Speed = "min" | "low" | "balanced" | "high" | "fast";
+
+/** Logical CPUs and the scan threads each speed uses; see `threads_for` in src-tauri/src/state.rs. */
+export type ThreadCounts = { cpus: number } & Record<Speed, number>;
 
 export interface DiskInfo {
   total: number;
@@ -263,4 +271,24 @@ export interface PhotoReport {
 export interface PhotoProgress {
   done: number;
   total: number;
+}
+
+export interface TelemetryStatus {
+  /** False in builds without an Aptabase key; the UI then never asks. */
+  available: boolean;
+  /** null until the user has answered. */
+  consent: boolean | null;
+}
+
+export interface CrashLog {
+  name: string;
+  /** Unix seconds. */
+  modified: number;
+  size: number;
+}
+
+export interface IssueReport {
+  /** Shown to the user; the same text is in `url`. */
+  body: string;
+  url: string;
 }

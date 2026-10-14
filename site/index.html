@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DiskLens — find what fills your disk, clean it safely</title>
+  <meta name="description" content="DiskLens is a fast, open-source disk space analyzer and cleaner for macOS and Linux. Treemap view, safe deletes, developer cleanup, duplicate photos. Works offline.">
+  <meta property="og:title" content="DiskLens — find what fills your disk, clean it safely">
+  <meta property="og:description" content="Fast, open-source disk space analyzer and cleaner for macOS and Linux. Works offline.">
+  <meta property="og:image" content="https://disklens.pages.dev/screenshots/disk.jpg">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://disklens.pages.dev/">
+  <link rel="canonical" href="https://disklens.pages.dev/">
+  <meta name="theme-color" content="#2a1a12">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <style>
+    :root {
+      --bg: #1d130d; --bg2: #2a1a12; --card: #34231a; --line: rgba(255,230,200,.12);
+      --text: #f6ece1; --muted: #b9a592; --accent: #f2a65a; --accent2: #e0703a; --ok: #8fd16a;
+      --radius: 16px;
+    }
+    @media (prefers-color-scheme: light) {
+      :root { --bg:#fbf6f0; --bg2:#f3e9dd; --card:#fff; --line:rgba(60,30,10,.12); --text:#2b1b10; --muted:#7a6552; --accent:#c8641c; --accent2:#a84d10; --ok:#3f8f1c; }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: radial-gradient(1100px 600px at 12% -10%, var(--bg2), var(--bg) 70%) fixed; color: var(--text);
+      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+    nav { display: flex; align-items: center; gap: 20px; padding: 18px 0; }
+    nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 650; text-decoration: none; font-size: 18px; }
+    nav .brand img { width: 30px; height: 30px; }
+    nav .links { margin-left: auto; display: flex; align-items: center; gap: 18px; font-size: 14px; color: var(--muted); }
+    nav .links a { text-decoration: none; } nav .links a:hover { color: var(--text); }
+    .lang { border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 999px; padding: 3px 11px; font: inherit; font-size: 13px; cursor: pointer; }
+    .lang:hover { color: var(--text); }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 999px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); transition: transform .12s, background .12s; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #2b1306; border-color: transparent; }
+    .btn.ghost { background: rgba(255,255,255,.04); }
+    .hero { text-align: center; padding: 56px 0 30px; }
+    .hero img.logo { width: 112px; height: 112px; filter: drop-shadow(0 0 40px rgba(242,166,90,.35)); }
+    h1 { font-size: clamp(34px, 6vw, 58px); line-height: 1.08; letter-spacing: -.02em; margin: 18px 0 14px; }
+    h1 em { font-style: normal; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .lead { max-width: 640px; margin: 0 auto; color: var(--muted); font-size: 18px; }
+    .cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 28px 0 10px; }
+    .badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 14px; font-size: 13px; color: var(--muted); }
+    .badges span { border: 1px solid var(--line); border-radius: 999px; padding: 2px 11px; }
+
+    .mock { margin: 38px auto 0; max-width: 900px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(0,0,0,.18); padding: 14px; box-shadow: 0 30px 80px rgba(0,0,0,.35); }
+    .mock .bar { display: flex; gap: 6px; padding: 0 0 12px; align-items: center; font-size: 12px; color: var(--muted); }
+    .mock .bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+    .mock .bar span { margin-left: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .shots figure { margin: 0; }
+    .stage { position: relative; aspect-ratio: 1280 / 820; border-radius: 10px; overflow: hidden; background: #120b07; }
+    .shot { position: absolute; inset: 0; opacity: 0; transition: opacity .6s ease; pointer-events: none; }
+    .shot.on { opacity: 1; pointer-events: auto; }
+    .shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(255,255,255,.18); background: rgba(20,12,8,.62); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; opacity: 0; transition: opacity .2s; }
+    .nav-btn.prev { left: 10px; } .nav-btn.next { right: 10px; }
+    .shots:hover .nav-btn, .nav-btn:focus-visible { opacity: 1; }
+    .caps { display: grid; margin-top: 14px; min-height: 3.4em; text-align: center; }
+    .cap { grid-area: 1 / 1; opacity: 0; transition: opacity .4s; }
+    .cap.on { opacity: 1; }
+    .cap b { display: block; font-size: 17px; }
+    .cap span.d { color: var(--muted); font-size: 14px; }
+    .dots { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+    .dots button { position: relative; width: 26px; height: 6px; padding: 0; border: 0; border-radius: 3px; background: var(--line); cursor: pointer; overflow: hidden; }
+    .dots button::after { content: ""; position: absolute; inset: 0; transform: scaleX(0); transform-origin: 0 50%; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .dots button.done::after { transform: scaleX(1); }
+    .dots button.on::after { animation: fill var(--delay, 4500ms) linear forwards; }
+    .shots.paused .dots button.on::after { animation-play-state: paused; }
+    @keyframes fill { to { transform: scaleX(1); } }
+    @media (prefers-reduced-motion: reduce) { .shot, .cap { transition: none; } .dots button.on::after { animation: none; transform: scaleX(1); } }
+    .note { text-align: center; color: var(--muted); font-size: 12px; margin-top: 10px; }
+
+    section { padding: 64px 0 0; }
+    h2 { font-size: clamp(26px, 4vw, 36px); letter-spacing: -.01em; margin: 0 0 10px; text-align: center; }
+    .sub { text-align: center; color: var(--muted); max-width: 620px; margin: 0 auto 34px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+    .card .ic { font-size: 26px; line-height: 1; }
+    .card h3 { margin: 12px 0 6px; font-size: 18px; }
+    .card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+    .safe { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; }
+    @media (max-width: 760px) { .safe { grid-template-columns: 1fr; } }
+    .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+    .steps li { display: flex; gap: 12px; align-items: flex-start; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+    .steps b { color: var(--ok); }
+    .safe h2, .safe .sub { text-align: left; margin-left: 0; }
+
+    table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 15px; }
+    th, td { padding: 11px 16px; text-align: left; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+    td.c, th.c { text-align: center; } tr:last-child td { border-bottom: 0; }
+    .scroll { overflow-x: auto; }
+
+    .install { text-align: center; }
+    pre { display: inline-block; text-align: left; background: rgba(0,0,0,.3); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; margin: 14px 0 0; font: 14px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace; max-width: 100%; overflow-x: auto; color: var(--text); }
+    pre span { color: var(--muted); }
+    footer { margin-top: 80px; border-top: 1px solid var(--line); padding: 26px 0 40px; color: var(--muted); font-size: 14px; }
+    footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; }
+    footer a { text-decoration: none; } footer a:hover { color: var(--text); }
+    [data-vi] { display: none; }
+    html[lang="vi"] [data-en] { display: none; }
+    html[lang="vi"] [data-vi] { display: revert; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="#"><img src="icon.svg" alt="" width="30" height="30">DiskLens</a>
+    <div class="links">
+      <a href="#features"><span data-en>Features</span><span data-vi>Tính năng</span></a>
+      <a href="#safe"><span data-en>Safety</span><span data-vi>An toàn</span></a>
+      <a href="#platforms"><span data-en>Platforms</span><span data-vi>Nền tảng</span></a>
+      <a href="https://github.com/nhamhv/DiskLens">GitHub</a>
+      <button class="lang" id="lang" type="button" aria-label="Language">VI</button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <img class="logo" src="icon.svg" alt="DiskLens logo" width="112" height="112">
+    <h1><span data-en>Find what fills your disk.<br><em>Clean it safely.</em></span><span data-vi>Tìm thứ đang chiếm ổ đĩa.<br><em>Dọn dẹp an toàn.</em></span></h1>
+    <p class="lead">
+      <span data-en>DiskLens is a fast, open-source disk space analyzer and cleaner for macOS and Linux. See every folder at a glance, spot what grew, and free space without risking your system.</span>
+      <span data-vi>DiskLens là công cụ phân tích và dọn dung lượng ổ đĩa nhanh, mã nguồn mở cho macOS và Linux. Nhìn toàn bộ thư mục trong một cái nhìn, biết thứ gì đang phình ra, và giải phóng dung lượng mà không lo hỏng hệ thống.</span>
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/nhamhv/DiskLens/releases"><span data-en>Download</span><span data-vi>Tải về</span></a>
+      <a class="btn ghost" href="https://github.com/nhamhv/DiskLens"><span data-en>View on GitHub</span><span data-vi>Xem trên GitHub</span></a>
+    </div>
+    <div class="badges">
+      <span>macOS</span><span>Linux</span><span data-en>Open source · Apache-2.0</span><span data-vi>Mã nguồn mở · Apache-2.0</span><span data-en>Works offline</span><span data-vi>Chạy offline</span><span data-en>12 languages</span><span data-vi>12 ngôn ngữ</span>
+    </div>
+
+    <div class="mock shots" id="shots" role="region" aria-roledescription="carousel" aria-label="DiskLens screenshots">
+      <div class="bar"><i></i><i></i><i></i><span>DiskLens</span></div>
+      <div class="stage">
+        <div class="shot on" aria-hidden="false"><img src="screenshots/welcome.jpg" width="1280" height="820" alt="Start" fetchpriority="high"></div>
+        <div class="shot" aria-hidden="true"><img data-src="screenshots/disk.jpg" width="1280" height="820" alt="Treemap"></div>
+        <div class="shot" aria-hidden="true"><img data-src="screenshots/cleanup.jpg" width="1280" height="820" alt="Cleanup"></div>
+        <div class="shot" aria-hidden="true"><img data-src="screenshots/largest.jpg" width="1280" height="820" alt="Largest files"></div>
+        <div class="shot" aria-hidden="true"><img data-src="screenshots/changes.jpg" width="1280" height="820" alt="Changes"></div>
+        <div class="shot" aria-hidden="true"><img data-src="screenshots/developer.jpg" width="1280" height="820" alt="Developer"></div>
+        <div class="shot" aria-hidden="true"><img data-src="screenshots/photos.jpg" width="1280" height="820" alt="Photos"></div>
+        <div class="shot" aria-hidden="true"><img data-src="screenshots/apps.jpg" width="1280" height="820" alt="Applications (macOS)"></div>
+        <div class="shot" aria-hidden="true"><img data-src="screenshots/report.jpg" width="1280" height="820" alt="Report a problem"></div>
+        <button class="nav-btn prev" type="button" aria-label="Previous">&#8249;</button>
+        <button class="nav-btn next" type="button" aria-label="Next">&#8250;</button>
+      </div>
+      <div class="caps" aria-live="off">
+        <div class="cap on"><b><span data-en>Start</span><span data-vi>Bắt đầu</span></b><span class="d"><span data-en>Scan Home or the whole disk, reopen previous scans instantly.</span><span data-vi>Quét thư mục Home hoặc cả ổ đĩa, mở lại kết quả cũ ngay lập tức.</span></span></div>
+        <div class="cap"><b><span data-en>Treemap</span><span data-vi>Treemap</span></b><span class="d"><span data-en>Every folder as a tile. Click to drill in; small folders never vanish.</span><span data-vi>Mỗi thư mục là một ô. Bấm để đi sâu, thư mục nhỏ không bao giờ biến mất.</span></span></div>
+        <div class="cap"><b><span data-en>Cleanup</span><span data-vi>Dọn dẹp</span></b><span class="d"><span data-en>Caches and build folders that are safe to remove, in one list.</span><span data-vi>Cache và thư mục build có thể xoá an toàn, gom trong một danh sách.</span></span></div>
+        <div class="cap"><b><span data-en>Largest files</span><span data-vi>Tệp lớn nhất</span></b><span class="d"><span data-en>The biggest files first. Filter to files untouched for a year.</span><span data-vi>Tệp lớn nhất lên đầu. Lọc các tệp không đụng tới trong một năm.</span></span></div>
+        <div class="cap"><b><span data-en>Changes</span><span data-vi>Thay đổi</span></b><span class="d"><span data-en>See what grew since the previous scan.</span><span data-vi>Xem thứ gì đã phình ra kể từ lần quét trước.</span></span></div>
+        <div class="cap"><b><span data-en>Developer</span><span data-vi>Dành cho dev</span></b><span class="d"><span data-en>node_modules, target, .venv, SDKs, package and AI caches. Each item is Safe, Rebuild or Caution.</span><span data-vi>node_modules, target, .venv, SDK, cache gói và công cụ AI. Mỗi mục là An toàn, Dựng lại hoặc Thận trọng.</span></span></div>
+        <div class="cap"><b><span data-en>Photos</span><span data-vi>Ảnh</span></b><span class="d"><span data-en>Blurry photos, screenshots and near-identical shots, analysed on your computer.</span><span data-vi>Ảnh mờ, ảnh chụp màn hình và ảnh gần giống nhau, phân tích ngay trên máy bạn.</span></span></div>
+        <div class="cap"><b><span data-en>Applications (macOS)</span><span data-vi>Ứng dụng (macOS)</span></b><span class="d"><span data-en>The real size of an app: bundle plus its data in ~/Library.</span><span data-vi>Dung lượng thật của ứng dụng: bản cài cộng dữ liệu trong ~/Library.</span></span></div>
+        <div class="cap"><b><span data-en>Report a problem</span><span data-vi>Báo lỗi</span></b><span class="d"><span data-en>Crash logs stay on your machine. You read the text and submit the GitHub issue yourself.</span><span data-vi>Log crash nằm lại trên máy bạn. Bạn đọc nội dung và tự gửi issue GitHub.</span></span></div>
+      </div>
+      <div class="dots"><button type="button" class="on" aria-label="1"></button><button type="button" class="" aria-label="2"></button><button type="button" class="" aria-label="3"></button><button type="button" class="" aria-label="4"></button><button type="button" class="" aria-label="5"></button><button type="button" class="" aria-label="6"></button><button type="button" class="" aria-label="7"></button><button type="button" class="" aria-label="8"></button><button type="button" class="" aria-label="9"></button></div>
+      <div class="note"><span data-en>Real screenshots with sample data</span><span data-vi>Ảnh chụp thật với số liệu mẫu</span></div>
+    </div>
+  </header>
+
+  <section id="features">
+    <h2><span data-en>Everything you need to reclaim space</span><span data-vi>Mọi thứ bạn cần để lấy lại dung lượng</span></h2>
+    <p class="sub"><span data-en>From a quick look at your home folder to a deep clean of developer junk.</span><span data-vi>Từ cái nhìn nhanh vào thư mục home đến dọn sạch rác của lập trình viên.</span></p>
+    <div class="grid">
+      <div class="card"><div class="ic">🗺️</div><h3><span data-en>Treemap of any folder</span><span data-vi>Treemap cho mọi thư mục</span></h3><p><span data-en>Click a tile to drill in. Every tile stays visible, so small folders don't vanish next to a 200 GB one.</span><span data-vi>Bấm vào ô để đi sâu hơn. Mọi ô đều hiển thị, thư mục nhỏ không bị biến mất bên cạnh thư mục 200 GB.</span></p></div>
+      <div class="card"><div class="ic">✨</div><h3><span data-en>Knows what is safe to clean</span><span data-vi>Biết thứ gì dọn được an toàn</span></h3><p><span data-en>Caches, build output, node_modules, Docker, AI models and more are colour-coded and rated by safety.</span><span data-vi>Cache, build output, node_modules, Docker, model AI… được tô màu và đánh giá mức an toàn.</span></p></div>
+      <div class="card"><div class="ic">📈</div><h3><span data-en>Changes since last scan</span><span data-vi>Thay đổi từ lần quét trước</span></h3><p><span data-en>Every folder shows how much it grew or shrank, and a Changes tab lists what grew most.</span><span data-vi>Mỗi thư mục cho biết tăng hay giảm bao nhiêu, tab Changes liệt kê những thứ phình to nhất.</span></p></div>
+      <div class="card"><div class="ic">🧑‍💻</div><h3><span data-en>Developer cleanup</span><span data-vi>Dọn dẹp cho dev</span></h3><p><span data-en>Projects, SDKs, package caches, IDE and AI tool caches, old versions and git worktrees, filtered by ecosystem, safety and age.</span><span data-vi>Project, SDK, cache package, cache IDE và công cụ AI, phiên bản cũ và git worktree, lọc theo hệ sinh thái, mức an toàn và độ cũ.</span></p></div>
+      <div class="card"><div class="ic">🖼️</div><h3><span data-en>Photo cleanup</span><span data-vi>Dọn ảnh</span></h3><p><span data-en>Finds blurry photos, screenshots and near-identical shots, and keeps the best of each group.</span><span data-vi>Tìm ảnh mờ, ảnh chụp màn hình và ảnh gần giống nhau, giữ lại tấm đẹp nhất của mỗi nhóm.</span></p></div>
+      <div class="card"><div class="ic">⚡</div><h3><span data-en>Fast, and gentle on your machine</span><span data-vi>Nhanh và nhẹ máy</span></h3><p><span data-en>Pick how many CPU threads a scan may use. Results are cached, so earlier scans open instantly — on disk, or in memory when the disk is nearly full.</span><span data-vi>Chọn số luồng CPU cho mỗi lần quét. Kết quả được cache nên mở lại tức thì — lưu trên đĩa, hoặc trong RAM khi đĩa sắp đầy.</span></p></div>
+    </div>
+  </section>
+
+  <section id="safe">
+    <div class="safe">
+      <div>
+        <h2><span data-en>Built so you can't delete by accident</span><span data-vi>Thiết kế để không xoá nhầm</span></h2>
+        <p class="sub"><span data-en>Every delete goes through the same guard, and system folders are always refused.</span><span data-vi>Mọi thao tác xoá đều qua cùng một lớp bảo vệ, thư mục hệ thống luôn bị từ chối.</span></p>
+      </div>
+      <ul class="steps">
+        <li><b>1</b><span data-en><strong>Move to Trash</strong> asks once, and you can restore from the Trash.</span><span data-vi><strong>Chuyển vào Thùng rác</strong> hỏi một lần, và bạn khôi phục lại được.</span></li>
+        <li><b>2</b><span data-en><strong>Delete permanently</strong> always asks twice, with Cancel focused so Enter never wipes anything.</span><span data-vi><strong>Xoá vĩnh viễn</strong> luôn hỏi hai lần, nút Huỷ được focus nên bấm Enter không xoá nhầm.</span></li>
+        <li><b>3</b><span data-en><strong>Protected paths</strong> such as <code>/</code>, <code>/usr</code> and your home folders can never be deleted.</span><span data-vi><strong>Đường dẫn được bảo vệ</strong> như <code>/</code>, <code>/usr</code> và các thư mục home không bao giờ bị xoá.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="platforms">
+    <h2><span data-en>macOS and Linux</span><span data-vi>macOS và Linux</span></h2>
+    <p class="sub"><span data-en>Most of DiskLens works the same everywhere. A few features rely on macOS-only system services. Windows is planned.</span><span data-vi>Phần lớn tính năng giống nhau trên cả hai hệ điều hành. Một vài tính năng dùng dịch vụ riêng của macOS. Windows đang trong kế hoạch.</span></p>
+    <div class="scroll"><table>
+      <thead><tr><th><span data-en>Feature</span><span data-vi>Tính năng</span></th><th class="c">macOS</th><th class="c">Linux</th></tr></thead>
+      <tbody>
+        <tr><td><span data-en>Treemap, largest files, changes since last scan</span><span data-vi>Treemap, file lớn nhất, thay đổi từ lần quét trước</span></td><td class="c">✅</td><td class="c">✅</td></tr>
+        <tr><td><span data-en>Cleanup suggestions and developer cleanup</span><span data-vi>Gợi ý dọn dẹp và dọn dẹp cho dev</span></td><td class="c">✅</td><td class="c">✅</td></tr>
+        <tr><td><span data-en>Safe deletes (Trash, two-step permanent delete)</span><span data-vi>Xoá an toàn (Thùng rác, xoá vĩnh viễn hai bước)</span></td><td class="c">✅</td><td class="c">✅</td></tr>
+        <tr><td><span data-en>Low CPU mode and speed levels</span><span data-vi>Chế độ tiết kiệm CPU và các mức tốc độ</span></td><td class="c">✅</td><td class="c">✅</td></tr>
+        <tr><td><span data-en>Photos: blurry, screenshots, similar shots</span><span data-vi>Ảnh: mờ, chụp màn hình, ảnh giống nhau</span></td><td class="c">✅</td><td class="c">⚠️ <small><span data-en>no HEIC</span><span data-vi>không có HEIC</span></small></td></tr>
+        <tr><td><span data-en>Menu bar / tray icon</span><span data-vi>Biểu tượng thanh menu / khay hệ thống</span></td><td class="c">✅</td><td class="c">⚠️ <small>AppIndicator</small></td></tr>
+        <tr><td><span data-en>Applications: sizes, updates, uninstall</span><span data-vi>Ứng dụng: dung lượng, cập nhật, gỡ cài đặt</span></td><td class="c">✅</td><td class="c">—</td></tr>
+        <tr><td><span data-en>Time Machine snapshots and purgeable space</span><span data-vi>Snapshot Time Machine và dung lượng purgeable</span></td><td class="c">✅</td><td class="c">—</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="privacy">
+    <h2><span data-en>Private by design</span><span data-vi>Riêng tư từ thiết kế</span></h2>
+    <p class="sub"><span data-en>DiskLens works offline. Your files, paths and scan results never leave your computer. Crash logs stay local, and bug reports are only sent when you read and submit them yourself.</span><span data-vi>DiskLens chạy offline. File, đường dẫn và kết quả quét không bao giờ rời khỏi máy bạn. Log lỗi chỉ lưu trên máy, và báo lỗi chỉ được gửi khi chính bạn đọc và bấm gửi.</span></p>
+  </section>
+
+  <section class="install" id="install">
+    <h2><span data-en>Get DiskLens</span><span data-vi>Cài đặt DiskLens</span></h2>
+    <p class="sub"><span data-en>Download a build from Releases, or build it yourself with Rust and Node.js.</span><span data-vi>Tải bản build từ Releases, hoặc tự build bằng Rust và Node.js.</span></p>
+    <div class="cta"><a class="btn primary" href="https://github.com/nhamhv/DiskLens/releases"><span data-en>Open Releases</span><span data-vi>Mở trang Releases</span></a></div>
+    <pre><span># build from source</span>
+git clone https://github.com/nhamhv/DiskLens.git
+cd DiskLens
+npm install
+npm start</pre>
+    <p class="note"><span data-en>Status: early (0.x). Bug reports and pull requests are welcome.</span><span data-vi>Trạng thái: giai đoạn đầu (0.x). Rất hoan nghênh báo lỗi và pull request.</span></p>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>© DiskLens</span>
+    <a href="https://github.com/nhamhv/DiskLens"><span data-en>Source code</span><span data-vi>Mã nguồn</span></a>
+    <a href="https://github.com/nhamhv/DiskLens/issues"><span data-en>Report an issue</span><span data-vi>Báo lỗi</span></a>
+    <a href="https://github.com/nhamhv/DiskLens/blob/main/LICENSE">Apache-2.0</a>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var btn = document.getElementById("lang");
+    var root = document.documentElement;
+    var saved = null;
+    try { saved = localStorage.getItem("lang"); } catch (e) {}
+    var lang = saved || ((navigator.language || "").toLowerCase().indexOf("vi") === 0 ? "vi" : "en");
+    function apply(l) { root.lang = l; btn.textContent = l === "vi" ? "EN" : "VI"; }
+    apply(lang);
+    btn.addEventListener("click", function () {
+      lang = root.lang === "vi" ? "en" : "vi";
+      apply(lang);
+      try { localStorage.setItem("lang", lang); } catch (e) {}
+    });
+  })();
+
+  (function () {
+    var root = document.getElementById("shots");
+    if (!root) return;
+    var DELAY = 4500;
+    var shots = [].slice.call(root.querySelectorAll(".shot"));
+    var caps = [].slice.call(root.querySelectorAll(".cap"));
+    var dots = [].slice.call(root.querySelectorAll(".dots button"));
+    var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var i = 0, timer = null, hold = false;
+    root.style.setProperty("--delay", DELAY + "ms");
+
+    function load(n) {
+      var img = shots[n % shots.length].querySelector("img");
+      if (img.dataset.src) { img.src = img.dataset.src; img.removeAttribute("data-src"); }
+    }
+    function show(n) {
+      i = (n + shots.length) % shots.length;
+      load(i); load(i + 1);
+      shots.forEach(function (el, k) { el.classList.toggle("on", k === i); el.setAttribute("aria-hidden", k === i ? "false" : "true"); });
+      caps.forEach(function (el, k) { el.classList.toggle("on", k === i); });
+      dots.forEach(function (el, k) {
+        el.classList.remove("on"); el.classList.toggle("done", k < i);
+        if (k === i) { void el.offsetWidth; el.classList.add("on"); }
+      });
+      schedule();
+    }
+    function schedule() {
+      clearTimeout(timer);
+      if (reduce || hold || document.hidden) return;
+      timer = setTimeout(function () { show(i + 1); }, DELAY);
+    }
+    function pause(v) {
+      hold = v; root.classList.toggle("paused", v);
+      if (v) clearTimeout(timer); else show(i); // restart the slide's timer and bar together
+    }
+    root.querySelector(".prev").addEventListener("click", function () { show(i - 1); });
+    root.querySelector(".next").addEventListener("click", function () { show(i + 1); });
+    dots.forEach(function (d, k) { d.addEventListener("click", function () { show(k); }); });
+    root.addEventListener("mouseenter", function () { pause(true); });
+    root.addEventListener("mouseleave", function () { pause(false); });
+    root.addEventListener("focusin", function () { pause(true); });
+    root.addEventListener("focusout", function () { pause(false); });
+    root.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight") show(i + 1); else if (e.key === "ArrowLeft") show(i - 1);
+    });
+    var x0 = null;
+    root.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    root.addEventListener("touchend", function (e) {
+      if (x0 === null) return;
+      var d = e.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(d) > 40) show(i + (d < 0 ? 1 : -1));
+    });
+    document.addEventListener("visibilitychange", function () { if (document.hidden) clearTimeout(timer); else show(i); });
+    show(0);
+  })();
+</script>
+</body>
+</html>

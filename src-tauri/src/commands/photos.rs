@@ -34,5 +34,5 @@ pub fn photos_cancel(state: State<AppState>) {
 /// A small JPEG preview of an image as a data URL, or `None` if it can't be decoded.
 #[tauri::command]
 pub async fn photo_thumb(path: String, size: Option<i32>) -> Result<Option<String>, String> {
-    blocking(move || photos::thumbnail_data_url(&PathBuf::from(path), size.unwrap_or(160).clamp(32, 512))).await
+    blocking(move || photos::thumbnail_data_url(&PathBuf::from(path), size.unwrap_or(160).clamp(32, 2048))).await
 }

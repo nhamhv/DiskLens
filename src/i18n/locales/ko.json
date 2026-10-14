@@ -15,11 +15,11 @@
   },
   "speed": {
     "low": "낮은 CPU 사용",
-    "lowHint": "고효율 코어에서 백그라운드 스레드 2개 사용 — 가장 느리지만 거의 체감되지 않습니다",
     "balanced": "균형",
-    "balancedHint": "CPU 코어의 절반 사용",
     "fast": "빠름",
-    "fastHint": "모든 코어 사용 — 가장 빨리 끝나지만 팬이 작동할 수 있습니다"
+    "min": "최소",
+    "high": "높음",
+    "threads": "스레드 {{count}} / {{cpus}}개"
   },
   "welcome": {
     "tagline": "Mac의 저장 공간을 무엇이 차지하고 있는지 확인하세요.",
@@ -40,7 +40,11 @@
     "fdaDevHint": "<code>npm run tauri dev</code>로 실행 중이신가요? 이를 실행한 앱(VS Code / iTerm)에 접근 권한을 허용하세요. 빌드된 앱은 <b>+</b>를 클릭하고 <code>DiskLens.app</code>을 선택하세요.",
     "taglineOther": "컴퓨터의 공간을 무엇이 차지하는지 확인하세요.",
     "photos": "사진",
-    "dropHint": "팁: 폴더를 이 창에 끌어다 놓으면 스캔합니다."
+    "dropHint": "팁: 폴더를 이 창에 끌어다 놓으면 스캔합니다.",
+    "cacheInMemoryHint": "메모리에 보관 중 — 앱을 닫으면 사라집니다",
+    "cacheDisk": "디스크",
+    "cacheRam": "메모리",
+    "cacheRamNotice": "디스크가 거의 차서 일부 스캔 결과는 메모리에만 보관되며 앱을 닫으면 사라집니다."
   },
   "disk": {
     "backHint": "처음으로 돌아가기 (스캔 중단)",
@@ -134,7 +138,11 @@
     "partial": "{{what}} 중 {{done, number}}개",
     "failed": "{{count, number}}개를 삭제할 수 없습니다",
     "trashNote_other": "휴지통에서 복원할 수 있습니다. <b>{{size}}</b>는 휴지통을 비운 후에 확보됩니다.",
-    "riskyWarning_other": "{{count, number}}개 항목({{size}})에 앱 데이터, 메일, 사진, 시스템 파일 또는 Git 기록이 들어 있습니다. 삭제하면 앱이 손상되거나 데이터가 사라질 수 있습니다."
+    "riskyWarning_other": "{{count, number}}개 항목({{size}})에 앱 데이터, 메일, 사진, 시스템 파일 또는 Git 기록이 들어 있습니다. 삭제하면 앱이 손상되거나 데이터가 사라질 수 있습니다.",
+    "showLess": "접기",
+    "skipHour": "1시간 동안 다시 묻지 않기",
+    "sortName": "이름",
+    "sortSize": "크기"
   },
   "apps": {
     "title": "응용 프로그램",
@@ -282,7 +290,13 @@
     "editorHint": "주석을 쓸 수 있는 JSON. 기본 id는 지정한 필드만 바꾸고, 새 id는 규칙을 추가합니다.",
     "rulesChangedOutside": "이 스캔 이후 규칙 파일이 바뀌었습니다.",
     "inYourFile": "내 파일에 있음",
-    "scannedAgo": "{{when}} 스캔"
+    "scannedAgo": "{{when}} 스캔",
+    "filterEco": "생태계",
+    "filterSafety": "안전도",
+    "filterAge": "기간",
+    "allLevels": "모든 수준",
+    "resetFilters": "초기화",
+    "nSelected": "{{count}}개 선택됨"
   },
   "kinds": {
     "trash": "휴지통",
@@ -423,6 +437,42 @@
     "selected_other": "{{count, number}}개 선택 · {{size}}",
     "quickLookHint": "스페이스로 미리 보기 · 더블 클릭으로 열기",
     "deleteForever": "영구 삭제…",
-    "moveToTrash": "휴지통으로 이동…"
+    "moveToTrash": "휴지통으로 이동…",
+    "view": "사진 보기",
+    "sharp": "선명한 썸네일",
+    "sharpHint": "고해상도 화면에서도 선명한 큰 썸네일(로딩이 조금 느림)",
+    "openExternal": "기본 앱으로 열기",
+    "close": "닫기",
+    "prev": "이전",
+    "next": "다음"
+  },
+  "cacheMode": {
+    "label": "스캔 결과 저장 위치",
+    "auto": "자동",
+    "disk": "디스크",
+    "memory": "메모리",
+    "autoHint": "디스크에 저장하되, 디스크가 거의 찼으면 메모리에 저장",
+    "diskHint": "항상 디스크에 저장",
+    "memoryHint": "메모리에만 보관하며 앱을 닫으면 사라집니다"
+  },
+  "report": {
+    "button": "문제 신고",
+    "title": "문제 신고",
+    "description": "내용이 미리 채워진 GitHub issue가 열립니다. DiskLens는 아무것도 직접 전송하지 않습니다. 아래 내용을 확인한 뒤 직접 제출하세요.",
+    "preview": "issue에 추가될 내용",
+    "crashCount": "이 컴퓨터에 저장된 크래시 로그: {{count}}",
+    "noCrashes": "기록된 크래시가 없습니다.",
+    "openFolder": "크래시 로그 보기",
+    "copy": "내용 복사",
+    "copied": "복사됨",
+    "openIssue": "GitHub issue 열기",
+    "attachHint": "DiskLens가 충돌했다면 크래시 로그 폴더의 최신 파일을 issue에 첨부하세요."
+  },
+  "stats": {
+    "title": "익명 실행 횟수를 공유할까요?",
+    "description": "DiskLens는 하루에 몇 명이 앱을 여는지 집계할 수 있습니다. 앱 버전과 운영체제만 전송하며, 파일 이름, 경로, 스캔 결과는 절대 전송하지 않습니다. 크래시 로그는 이 컴퓨터에만 남고 전송되지 않습니다.",
+    "allow": "공유",
+    "deny": "괜찮습니다",
+    "toggle": "익명 실행 횟수 공유"
   }
 }

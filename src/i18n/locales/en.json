@@ -17,11 +17,11 @@
   },
   "speed": {
     "low": "Low CPU",
-    "lowHint": "2 background threads on efficiency cores — slowest, barely noticeable",
     "balanced": "Balanced",
-    "balancedHint": "Half the CPU cores",
     "fast": "Fast",
-    "fastHint": "All cores — finishes quickest, fans may spin up"
+    "min": "Minimum",
+    "high": "High",
+    "threads": "{{count}} of {{cpus}} threads"
   },
   "welcome": {
     "tagline": "See what is taking up space on your Mac.",
@@ -42,7 +42,11 @@
     "fdaDevHint": "Running with <code>npm run tauri dev</code>? Grant access to the app that launched it (VS Code / iTerm). For the built app, click <b>+</b> and pick <code>DiskLens.app</code>.",
     "taglineOther": "See what is taking up space on your computer.",
     "photos": "Photos",
-    "dropHint": "Tip: drop a folder onto this window to scan it."
+    "dropHint": "Tip: drop a folder onto this window to scan it.",
+    "cacheInMemoryHint": "Kept in memory — gone when the app closes",
+    "cacheDisk": "Disk",
+    "cacheRam": "RAM",
+    "cacheRamNotice": "The disk is nearly full, so some scans are kept in RAM only and will be lost when the app closes."
   },
   "disk": {
     "backHint": "Back to start (stops the scan)",
@@ -139,7 +143,11 @@
     "trashNote_one": "You can restore it from the Trash. The <b>{{size}}</b> is only freed after you empty the Trash.",
     "trashNote_other": "You can restore them from the Trash. The <b>{{size}}</b> is only freed after you empty the Trash.",
     "riskyWarning_one": "{{count, number}} item ({{size}}) holds app data, mail, photos, system files or a Git history. Deleting it may break an app or lose data.",
-    "riskyWarning_other": "{{count, number}} items ({{size}}) hold app data, mail, photos, system files or a Git history. Deleting them may break apps or lose data."
+    "riskyWarning_other": "{{count, number}} items ({{size}}) hold app data, mail, photos, system files or a Git history. Deleting them may break apps or lose data.",
+    "showLess": "Show less",
+    "skipHour": "Don't ask again for 1 hour",
+    "sortName": "Name",
+    "sortSize": "Size"
   },
   "apps": {
     "title": "Applications",
@@ -289,7 +297,13 @@
     "editorHint": "JSON with comments. A built-in id changes only the fields you set; a new id adds a rule.",
     "rulesChangedOutside": "The rules file changed since this scan.",
     "inYourFile": "In your file",
-    "scannedAgo": "scanned {{when}}"
+    "scannedAgo": "scanned {{when}}",
+    "filterEco": "Ecosystem",
+    "filterSafety": "Safety",
+    "filterAge": "Age",
+    "allLevels": "All levels",
+    "resetFilters": "Reset",
+    "nSelected": "{{count}} selected"
   },
   "kinds": {
     "trash": "Trash",
@@ -436,6 +450,42 @@
     "selected_other": "{{count, number}} selected · {{size}}",
     "quickLookHint": "Space to preview · double-click to open",
     "deleteForever": "Delete Permanently…",
-    "moveToTrash": "Move to Trash…"
+    "moveToTrash": "Move to Trash…",
+    "view": "View photo",
+    "sharp": "Sharp thumbnails",
+    "sharpHint": "Larger thumbnails that stay crisp on high-resolution screens (a little slower to load)",
+    "openExternal": "Open with default app",
+    "close": "Close",
+    "prev": "Previous",
+    "next": "Next"
+  },
+  "cacheMode": {
+    "label": "Save scans to",
+    "auto": "Auto",
+    "disk": "Disk",
+    "memory": "Memory",
+    "autoHint": "Disk, or memory when the disk is nearly full",
+    "diskHint": "Always save scans on disk",
+    "memoryHint": "Keep scans in memory only; they are gone when the app closes"
+  },
+  "report": {
+    "button": "Report a problem",
+    "title": "Report a problem",
+    "description": "This opens a pre-filled GitHub issue. DiskLens sends nothing itself: you read the text below and submit it yourself.",
+    "preview": "Text added to the issue",
+    "crashCount": "Crash logs saved on this computer: {{count}}",
+    "noCrashes": "No crashes recorded.",
+    "openFolder": "Show crash logs",
+    "copy": "Copy text",
+    "copied": "Copied",
+    "openIssue": "Open GitHub issue",
+    "attachHint": "If DiskLens crashed, attach the newest file from the crash logs folder to the issue."
+  },
+  "stats": {
+    "title": "Share an anonymous launch count?",
+    "description": "DiskLens can count how many people open it each day. It sends only the app version and your OS, never file names, paths or scan results. Crash logs stay on your computer and are never sent.",
+    "allow": "Share",
+    "deny": "No thanks",
+    "toggle": "Share anonymous launch count"
   }
 }

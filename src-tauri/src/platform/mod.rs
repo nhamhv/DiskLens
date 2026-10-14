@@ -53,11 +53,17 @@ pub struct Gray {
 }
 
 /// Total and available bytes of the volume holding `/`.
-#[allow(clippy::unnecessary_cast)] // field types differ between macOS and Linux
 pub fn disk_space() -> Result<(u64, u64), String> {
-    let root = std::ffi::CString::new("/").unwrap();
+    disk_space_at(Path::new("/"))
+}
+
+/// Total and available bytes of the volume holding `path`.
+#[allow(clippy::unnecessary_cast)] // field types differ between macOS and Linux
+pub fn disk_space_at(path: &Path) -> Result<(u64, u64), String> {
+    use std::os::unix::ffi::OsStrExt;
+    let path = std::ffi::CString::new(path.as_os_str().as_bytes()).map_err(|e| e.to_string())?;
     let mut s: libc::statvfs = unsafe { std::mem::zeroed() };
-    if unsafe { libc::statvfs(root.as_ptr(), &mut s) } != 0 {
+    if unsafe { libc::statvfs(path.as_ptr(), &mut s) } != 0 {
         return Err(std::io::Error::last_os_error().to_string());
     }
     let frsize = s.f_frsize as u64;

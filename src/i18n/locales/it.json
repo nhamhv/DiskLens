@@ -19,11 +19,11 @@
   },
   "speed": {
     "low": "CPU ridotta",
-    "lowHint": "2 thread in background su core a basso consumo — il più lento, quasi impercettibile",
     "balanced": "Bilanciata",
-    "balancedHint": "Metà dei core della CPU",
     "fast": "Veloce",
-    "fastHint": "Tutti i core — finisce prima, le ventole potrebbero accelerare"
+    "min": "Minimo",
+    "high": "Alto",
+    "threads": "{{count}} di {{cpus}} thread"
   },
   "welcome": {
     "tagline": "Scopri cosa occupa spazio sul tuo Mac.",
@@ -44,7 +44,11 @@
     "fdaDevHint": "Esegui con <code>npm run tauri dev</code>? Concedi l'accesso all'app che l'ha avviato (VS Code / iTerm). Per l'app compilata, clicca su <b>+</b> e scegli <code>DiskLens.app</code>.",
     "taglineOther": "Scopri cosa occupa spazio sul tuo computer.",
     "photos": "Foto",
-    "dropHint": "Suggerimento: trascina una cartella su questa finestra per analizzarla."
+    "dropHint": "Suggerimento: trascina una cartella su questa finestra per analizzarla.",
+    "cacheInMemoryHint": "In memoria — persa alla chiusura dell'app",
+    "cacheDisk": "Disco",
+    "cacheRam": "RAM",
+    "cacheRamNotice": "Il disco è quasi pieno: alcune scansioni sono tenute solo in RAM e andranno perse alla chiusura dell'app."
   },
   "disk": {
     "backHint": "Torna all'inizio (interrompe la scansione)",
@@ -142,7 +146,11 @@
     "trashNote_many": "Puoi ripristinarli dal Cestino. I <b>{{size}}</b> vengono liberati solo dopo aver svuotato il Cestino.",
     "trashNote_other": "Puoi ripristinarli dal Cestino. I <b>{{size}}</b> vengono liberati solo dopo aver svuotato il Cestino.",
     "riskyWarning_one": "{{count, number}} elemento ({{size}}) contiene dati di app, posta, foto, file di sistema o una cronologia Git. Eliminarlo può rompere un’app o far perdere dati.",
-    "riskyWarning_other": "{{count, number}} elementi ({{size}}) contengono dati di app, posta, foto, file di sistema o una cronologia Git. Eliminarli può rompere le app o far perdere dati."
+    "riskyWarning_other": "{{count, number}} elementi ({{size}}) contengono dati di app, posta, foto, file di sistema o una cronologia Git. Eliminarli può rompere le app o far perdere dati.",
+    "showLess": "Mostra meno",
+    "skipHour": "Non chiedere più per 1 ora",
+    "sortName": "Nome",
+    "sortSize": "Dimensione"
   },
   "apps": {
     "title": "Applicazioni",
@@ -294,7 +302,13 @@
     "editorHint": "JSON con commenti. Un id integrato cambia solo i campi indicati; un id nuovo aggiunge una regola.",
     "rulesChangedOutside": "Il file delle regole è cambiato da questa analisi.",
     "inYourFile": "Nel tuo file",
-    "scannedAgo": "analizzato {{when}}"
+    "scannedAgo": "analizzato {{when}}",
+    "filterEco": "Ecosistema",
+    "filterSafety": "Sicurezza",
+    "filterAge": "Età",
+    "allLevels": "Tutti i livelli",
+    "resetFilters": "Reimposta",
+    "nSelected": "{{count}} selezionati"
   },
   "kinds": {
     "trash": "Cestino",
@@ -447,6 +461,42 @@
     "selected_other": "{{count, number}} selezionate · {{size}}",
     "quickLookHint": "Spazio per l’anteprima · doppio clic per aprire",
     "deleteForever": "Elimina definitivamente…",
-    "moveToTrash": "Sposta nel Cestino…"
+    "moveToTrash": "Sposta nel Cestino…",
+    "view": "Visualizza foto",
+    "sharp": "Miniature nitide",
+    "sharpHint": "Miniature più grandi, nitide sugli schermi ad alta risoluzione (caricamento un po' più lento)",
+    "openExternal": "Apri con l'app predefinita",
+    "close": "Chiudi",
+    "prev": "Precedente",
+    "next": "Successiva"
+  },
+  "cacheMode": {
+    "label": "Salva le scansioni su",
+    "auto": "Auto",
+    "disk": "Disco",
+    "memory": "Memoria",
+    "autoHint": "Disco, o memoria se il disco è quasi pieno",
+    "diskHint": "Salva sempre su disco",
+    "memoryHint": "Solo in memoria; perse alla chiusura dell'app"
+  },
+  "report": {
+    "button": "Segnala un problema",
+    "title": "Segnala un problema",
+    "description": "Si apre una issue GitHub precompilata. DiskLens non invia nulla da solo: leggi il testo qui sotto e inviala tu.",
+    "preview": "Testo aggiunto alla issue",
+    "crashCount": "Log di crash salvati su questo computer: {{count}}",
+    "noCrashes": "Nessun crash registrato.",
+    "openFolder": "Mostra i log di crash",
+    "copy": "Copia testo",
+    "copied": "Copiato",
+    "openIssue": "Apri issue su GitHub",
+    "attachHint": "Se DiskLens è andato in crash, allega alla issue il file più recente della cartella dei log di crash."
+  },
+  "stats": {
+    "title": "Condividere un conteggio anonimo degli avvii?",
+    "description": "DiskLens può contare quante persone lo aprono ogni giorno. Invia solo la versione dell'app e il sistema operativo, mai nomi di file, percorsi o risultati delle scansioni. I log di crash restano sul tuo computer e non vengono mai inviati.",
+    "allow": "Condividi",
+    "deny": "No, grazie",
+    "toggle": "Condividi conteggio anonimo degli avvii"
   }
 }

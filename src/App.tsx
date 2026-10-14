@@ -5,8 +5,9 @@ import { useTranslation } from "react-i18next";
 import { FolderInput } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-import type { Speed } from "@/lib/types";
+import type { CacheMode, Speed } from "@/lib/types";
 import { Toaster } from "@/components/ui/sonner";
+import { StatsConsent } from "@/components/StatsConsent";
 import { Welcome } from "@/features/welcome/Welcome";
 import { DiskView } from "@/features/disk/DiskView";
 import { AppsView } from "@/features/apps/AppsView";
@@ -21,6 +22,12 @@ export default function App() {
   const [home, setHome] = useState("");
   const [screen, setScreen] = useState<Screen>({ name: "welcome" });
   const [speed, setSpeedState] = useState<Speed>(() => (localStorage.getItem("speed") as Speed) || "balanced");
+
+  const [cacheMode, setCacheModeState] = useState<CacheMode>(() => (localStorage.getItem("cacheMode") as CacheMode) || "auto");
+  // The backend starts in `auto`; tell it the saved choice.
+  useEffect(() => {
+    api.setCacheMode(cacheMode).catch(() => {});
+  }, [cacheMode]);
 
   const { t, i18n } = useTranslation();
   const [dropping, setDropping] = useState(false);
@@ -66,6 +73,10 @@ export default function App() {
     setSpeedState(s);
     localStorage.setItem("speed", s);
   };
+  const setCacheMode = (m: CacheMode) => {
+    setCacheModeState(m);
+    localStorage.setItem("cacheMode", m);
+  };
   const goHome = () => setScreen({ name: "welcome" });
 
   return (
@@ -75,6 +86,8 @@ export default function App() {
           home={home}
           speed={speed}
           onSpeed={setSpeed}
+          cacheMode={cacheMode}
+          onCacheMode={setCacheMode}
           onOpenFolder={openFolder}
           onOpenApps={() => setScreen({ name: "apps" })}
           onOpenDev={() => setScreen({ name: "dev" })}
@@ -97,6 +110,7 @@ export default function App() {
           </div>
         </div>
       )}
+      <StatsConsent />
       <Toaster position="bottom-right" />
     </>
   );

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Trans, useTranslation } from "react-i18next";
-import { Clock, Database, FolderSearch, HardDrive, Heart, House, Images, ShieldAlert, SquareTerminal, Trash2, X } from "lucide-react";
+import { Clock, Database, MemoryStick, TriangleAlert, FolderSearch, HardDrive, Heart, House, Images, ShieldAlert, SquareTerminal, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-import type { Entry, ScanMeta, Speed } from "@/lib/types";
+import type { CacheMode, Entry, ScanMeta, Speed } from "@/lib/types";
 import { formatBytes, timeAgo } from "@/lib/format";
 import { isMac, platform } from "@/lib/platform";
 import { runDelete } from "@/lib/delete";
@@ -13,6 +13,8 @@ import { DeleteDialog, type DeleteRequest } from "@/components/DeleteDialog";
 import { ApplicationsIcon } from "@/components/icons";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { SpeedPicker } from "@/components/SpeedPicker";
+import { CacheModePicker } from "@/components/CacheModePicker";
+import { ReportIssue } from "@/components/ReportIssue";
 import { rootLabel } from "@/features/disk/rootLabel";
 import { hasDonations } from "@/features/donate/links";
 import { HiddenSpace } from "./HiddenSpace";
@@ -22,6 +24,8 @@ interface Props {
   home: string;
   speed: Speed;
   onSpeed(s: Speed): void;
+  cacheMode: CacheMode;
+  onCacheMode(m: CacheMode): void;
   onOpenFolder(path: string): void;
   onOpenApps(): void;
   onOpenDev(): void;
@@ -29,7 +33,7 @@ interface Props {
   onOpenDonate(): void;
 }
 
-export function Welcome({ home, speed, onSpeed, onOpenFolder, onOpenApps, onOpenDev, onOpenPhotos, onOpenDonate }: Props) {
+export function Welcome({ home, speed, onSpeed, cacheMode, onCacheMode, onOpenFolder, onOpenApps, onOpenDev, onOpenPhotos, onOpenDonate }: Props) {
   const { t } = useTranslation();
   const [caches, setCaches] = useState<ScanMeta[]>([]);
   const [fda, setFda] = useState<boolean | null>(null);
@@ -42,6 +46,7 @@ export function Welcome({ home, speed, onSpeed, onOpenFolder, onOpenApps, onOpen
   const refreshCaches = useCallback(() => {
     api.listCaches().then(setCaches).catch(() => {});
   }, []);
+  const anyInMemory = caches.some((c) => c.inMemory);
   const cacheTotal = caches.reduce((sum, c) => sum + c.cacheBytes, 0);
   const clearCaches = () =>
     api
@@ -93,6 +98,7 @@ export function Welcome({ home, speed, onSpeed, onOpenFolder, onOpenApps, onOpen
             <Heart className="text-rose-400" /> {t("donate.support")}
           </Button>
         )}
+        <ReportIssue />
         <LanguagePicker />
       </div>
       <img src={appIcon} alt="" draggable={false} className="mb-4 size-36 drop-shadow-[0_0_40px_oklch(0.7_0.1_60/0.3)]" />
@@ -121,12 +127,13 @@ export function Welcome({ home, speed, onSpeed, onOpenFolder, onOpenApps, onOpen
           <FolderSearch /> {t("welcome.chooseFolder")}
         </Button>
         {trash.length > 0 && (
-          <Button size="lg" variant="outline" title={t("welcome.emptyTrashHint")} onClick={() => setTrashRequest({ entries: trash, permanent: true })}>
+          <Button size="lg" variant="outline" title={t("welcome.emptyTrashHint")} onClick={() => setTrashRequest({ entries: trash, permanent: true, skipWarning: true })}>
             <Trash2 /> {t("welcome.emptyTrash", { size: formatBytes(trashSize) })}
           </Button>
         )}
       </div>
       <SpeedPicker speed={speed} onChange={onSpeed} className="mt-4" />
+      <CacheModePicker mode={cacheMode} onChange={onCacheMode} className="mt-3" />
       <p className="mt-3 text-xs text-muted-foreground">{t("welcome.dropHint")}</p>
       {platform.hiddenSpace && <HiddenSpace refreshKey={focusCount} />}
 
@@ -139,6 +146,11 @@ export function Welcome({ home, speed, onSpeed, onOpenFolder, onOpenApps, onOpen
               {t("welcome.clearCaches", { size: formatBytes(cacheTotal) })}
             </Button>
           </div>
+          {anyInMemory && cacheMode === "auto" && (
+            <p className="mb-2 flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
+              <TriangleAlert className="mt-0.5 size-3.5 shrink-0" /> {t("welcome.cacheRamNotice")}
+            </p>
+          )}
           <div className="overflow-hidden rounded-xl border bg-card/60">
             {caches.map((c) => (
               <div
@@ -151,10 +163,10 @@ export function Welcome({ home, speed, onSpeed, onOpenFolder, onOpenApps, onOpen
                 <span className="tabular-nums">{formatBytes(c.size)}</span>
                 <span className="w-28 text-right text-xs text-muted-foreground">{timeAgo(c.scannedAt)}</span>
                 <span
-                  className="flex w-20 items-center justify-end gap-1 text-xs text-muted-foreground tabular-nums"
-                  title={t("welcome.cacheSizeHint")}
+                  className={`flex w-32 items-center justify-end gap-1 text-xs tabular-nums ${c.inMemory ? "text-amber-400" : "text-muted-foreground"}`}
+                  title={t(c.inMemory ? "welcome.cacheInMemoryHint" : "welcome.cacheSizeHint")}
                 >
-                  <Database className="size-3 shrink-0" /> {formatBytes(c.cacheBytes)}
+                  {c.inMemory ? <MemoryStick className="size-3 shrink-0" /> : <Database className="size-3 shrink-0" />} {t(c.inMemory ? "welcome.cacheRam" : "welcome.cacheDisk")} · {formatBytes(c.cacheBytes)}
                 </span>
                 <Button
                   size="icon-xs"

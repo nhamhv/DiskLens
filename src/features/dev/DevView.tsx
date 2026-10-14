@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useTranslation } from "react-i18next";
@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft,
   Bot,
+  ChevronDown,
   Code,
   FileCog,
   FolderGit2,
@@ -30,7 +31,14 @@ import { runDelete } from "@/lib/delete";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { DeleteDialog, type DeleteRequest } from "@/components/DeleteDialog";
 import { ItemRow } from "./ItemRow";
 import { ProjectRow, WorktreeRow } from "./Rows";
@@ -39,6 +47,7 @@ import {
   TABS,
   eco,
   idleDays,
+  itemPasses,
   selectable,
   sum,
   tildify,
@@ -64,6 +73,26 @@ const TAB_ICON: Record<Tab, LucideIcon> = {
 
 const SAFETIES: Safety[] = ["safe", "rebuild", "caution"];
 const AGES: Age[] = [0, 30, 90, 365];
+const DEFAULT_FILTERS: Filters = { eco: [], safety: ["safe", "rebuild"], age: 0 };
+
+/** One filter as a button showing its current value; the options open in a menu. */
+function FilterMenu({ label, value, title, children }: { label: string; value: ReactNode; title?: string; children: ReactNode }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size="sm" variant="outline" title={title} className="shrink-0 gap-1.5 font-normal">
+          <span className="text-muted-foreground">{label}</span>
+          <span className="text-foreground">{value}</span>
+          <ChevronDown className="size-3.5 text-muted-foreground" />
+        </Button>
+      </DropdownMenuTrigger>
+      {/* Wider than the button, which can be short ("Age: Any age"), so counts and hints fit. */}
+      <DropdownMenuContent align="end" className="w-auto min-w-64 max-w-sm">
+        {children}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 /** "Select stale" never picks projects touched more recently than this. */
 const STALE_DAYS = 90;
 
@@ -93,7 +122,9 @@ export function DevView({ home, speed, onBack }: { home: string; speed: Speed; o
   const [scanning, setScanning] = useState(false);
   const [progress, setProgress] = useState<DevProgress | null>(null);
   const [tab, setTab] = useState<Tab>("projects");
-  const [filters, setFilters] = useState<Filters>({ eco: null, safety: ["safe", "rebuild"], age: 0 });
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const filtersChanged =
+    filters.eco.length > 0 || filters.age !== 0 || filters.safety.length !== DEFAULT_FILTERS.safety.length || DEFAULT_FILTERS.safety.some((x) => !filters.safety.includes(x));
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<DeleteRequest | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -225,13 +256,30 @@ export function DevView({ home, speed, onBack }: { home: string; speed: Speed; o
   const tabSize = (x: Tab) =>
     x === "projects" ? sum(projects.flatMap((p) => p.items)) : x === "worktrees" ? sum(worktrees.map((p) => p.worktree!)) : sum(lists[x]);
 
-  const ecos = useMemo(() => {
+  // A filter can empty the open tab while the data it matches sits in another one; follow it.
+  useEffect(() => {
+    if (tabSize(tab) > 0) return;
+    const best = TABS.map((x) => ({ x, size: tabSize(x) })).sort((a, b) => b.size - a.size)[0];
+    if (best && best.size > 0) setTab(best.x);
+    // Only when the filters change, so choosing an empty tab by hand still works.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
+
+  /** Ecosystems that have something to show under the safety and age filters, with how much; ticked ones stay listed. */
+  const ecoStats = useMemo(() => {
     if (!report) return [];
-    const all = [...report.items, ...report.projects.flatMap((p) => p.items)];
-    const by = new Map<string, number>();
-    for (const i of all) by.set(i.eco, (by.get(i.eco) ?? 0) + i.size);
-    return [...by].sort((a, b) => b[1] - a[1]).map(([id]) => id);
-  }, [report]);
+    const others: Filters = { ...filters, eco: [] };
+    const by = new Map<string, { count: number; size: number }>();
+    const add = (i: DevItem, activeAt: number) => {
+      if (!itemPasses(i, others, activeAt)) return;
+      const s = by.get(i.eco) ?? { count: 0, size: 0 };
+      by.set(i.eco, { count: s.count + 1, size: s.size + i.size });
+    };
+    report.items.forEach((i) => add(i, i.mtime));
+    report.projects.forEach((p) => p.items.forEach((i) => add(i, p.lastActive)));
+    for (const id of filters.eco) if (!by.has(id)) by.set(id, { count: 0, size: 0 });
+    return [...by].sort((a, b) => b[1].size - a[1].size).map(([id, stats]) => ({ id, ...stats }));
+  }, [report, filters]);
 
   /** Size of anything that can be selected, by path. */
   const sizes = useMemo(() => {
@@ -281,7 +329,7 @@ export function DevView({ home, speed, onBack }: { home: string; speed: Speed; o
     toast(t("dev.quickSelected", { count: paths.length, size: formatBytes(paths.reduce((s, p) => s + (sizes.get(p) ?? 0), 0)) }));
   };
 
-  const auto = (i: DevItem) => selectable(i) && !i.custom && (!filters.eco || i.eco === filters.eco);
+  const auto = (i: DevItem) => selectable(i) && !i.custom && (!filters.eco.length || filters.eco.includes(i.eco));
 
   const selectStale = () => {
     if (!report) return;
@@ -324,7 +372,7 @@ export function DevView({ home, speed, onBack }: { home: string; speed: Speed; o
 
   // ── Render ────────────────────────────────────────────────────────
 
-  const filtered = filters.eco !== null || filters.age !== 0 || filters.safety.length !== 2 || filters.safety.includes("caution");
+  const filtered = filters.eco.length > 0 || filters.age !== 0 || filters.safety.length !== 2 || filters.safety.includes("caution");
   const shownCount =
     tab === "projects" ? projects.length : tab === "worktrees" ? worktrees.length : lists[tab].length;
 
@@ -430,7 +478,7 @@ export function DevView({ home, speed, onBack }: { home: string; speed: Speed; o
       )}
 
       <div className="flex h-10 shrink-0 items-center gap-2 border-b px-3 text-xs text-muted-foreground">
-        <span className="shrink-0 tabular-nums">
+        <span className="min-w-0 truncate tabular-nums">
           {t("dev.reclaimable", { size: formatBytes(tabSize(tab)) })}
           {report && !scanning && (
             <span
@@ -442,49 +490,82 @@ export function DevView({ home, speed, onBack }: { home: string; speed: Speed; o
             </span>
           )}
         </span>
-        <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
-          <Button size="xs" variant={filters.eco === null ? "secondary" : "ghost"} onClick={() => setFilters((f) => ({ ...f, eco: null }))}>
+        <span className="flex-1" />
+        <FilterMenu
+          label={t("dev.filterEco")}
+          value={
+            filters.eco.length === 0 ? (
+              t("dev.allEcos")
+            ) : (
+              <span className="flex items-center gap-1.5">
+                {filters.eco.slice(0, 3).map((id) => (
+                  <span key={id} className="size-2 rounded-full" style={{ background: eco(id).color }} />
+                ))}
+                {filters.eco.length === 1 ? eco(filters.eco[0]).label : t("dev.nSelected", { count: filters.eco.length })}
+              </span>
+            )
+          }
+        >
+          <DropdownMenuCheckboxItem checked={filters.eco.length === 0} onSelect={(e) => e.preventDefault()} onCheckedChange={() => setFilters((f) => ({ ...f, eco: [] }))}>
             {t("dev.allEcos")}
-          </Button>
-          {ecos.map((id) => (
-            <Button
+          </DropdownMenuCheckboxItem>
+          {ecoStats.map(({ id, count, size }) => (
+            <DropdownMenuCheckboxItem
               key={id}
-              size="xs"
-              variant={filters.eco === id ? "secondary" : "ghost"}
-              onClick={() => setFilters((f) => ({ ...f, eco: f.eco === id ? null : id }))}
+              checked={filters.eco.includes(id)}
+              // Keep the menu open so several ecosystems can be ticked in one go.
+              onSelect={(e) => e.preventDefault()}
+              onCheckedChange={(on) => setFilters((f) => ({ ...f, eco: on ? [...f.eco, id] : f.eco.filter((x) => x !== id) }))}
             >
               <span className="size-2 rounded-full" style={{ background: eco(id).color }} />
               {eco(id).label}
-            </Button>
+              <span className="ml-auto pl-4 text-xs text-muted-foreground tabular-nums">
+                {count} · {formatBytes(size)}
+              </span>
+            </DropdownMenuCheckboxItem>
           ))}
-        </div>
-        <ToggleGroup
-          type="multiple"
-          size="sm"
-          variant="outline"
-          value={filters.safety}
-          onValueChange={(v) => setFilters((f) => ({ ...f, safety: v as Safety[] }))}
+        </FilterMenu>
+        <FilterMenu
+          label={t("dev.filterSafety")}
+          value={
+            filters.safety.length === SAFETIES.length
+              ? t("dev.allLevels")
+              : filters.safety.length
+                ? SAFETIES.filter((x) => filters.safety.includes(x))
+                    .map((x) => t(`dev.safety.${x}`))
+                    .join(", ")
+                : "–"
+          }
         >
-          {SAFETIES.map((s) => (
-            <ToggleGroupItem key={s} value={s} className="data-[state=on]:text-primary" title={t(`dev.safetyHint.${s}`)}>
-              {t(`dev.safety.${s}`)}
-            </ToggleGroupItem>
+          {SAFETIES.map((x) => (
+            <DropdownMenuCheckboxItem
+              key={x}
+              checked={filters.safety.includes(x)}
+              // Keep the menu open so several levels can be ticked in one go.
+              onSelect={(e) => e.preventDefault()}
+              onCheckedChange={(on) => setFilters((f) => ({ ...f, safety: on ? [...f.safety, x] : f.safety.filter((y) => y !== x) }))}
+            >
+              <span className="flex flex-col">
+                {t(`dev.safety.${x}`)}
+                <span className="text-xs text-muted-foreground">{t(`dev.safetyHint.${x}`)}</span>
+              </span>
+            </DropdownMenuCheckboxItem>
           ))}
-        </ToggleGroup>
-        <ToggleGroup
-          type="single"
-          size="sm"
-          variant="outline"
-          value={String(filters.age)}
-          onValueChange={(v) => v && setFilters((f) => ({ ...f, age: Number(v) as Age }))}
-          title={t("dev.ageHint")}
-        >
-          {AGES.map((a) => (
-            <ToggleGroupItem key={a} value={String(a)} className="data-[state=on]:text-primary">
-              {a === 0 ? t("dev.age.any") : t("dev.age.days", { days: a })}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        </FilterMenu>
+        <FilterMenu label={t("dev.filterAge")} title={t("dev.ageHint")} value={filters.age === 0 ? t("dev.age.any") : t("dev.age.days", { days: filters.age })}>
+          <DropdownMenuRadioGroup value={String(filters.age)} onValueChange={(v) => setFilters((f) => ({ ...f, age: Number(v) as Age }))}>
+            {AGES.map((a) => (
+              <DropdownMenuRadioItem key={a} value={String(a)}>
+                {a === 0 ? t("dev.age.any") : t("dev.age.days", { days: a })}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </FilterMenu>
+        {filtersChanged && (
+          <Button size="xs" variant="ghost" title={t("dev.resetFilters")} onClick={() => setFilters(DEFAULT_FILTERS)}>
+            <X /> {t("dev.resetFilters")}
+          </Button>
+        )}
       </div>
 
       <div className="flex min-h-0 flex-1">
@@ -492,6 +573,8 @@ export function DevView({ home, speed, onBack }: { home: string; speed: Speed; o
           {TABS.map((x) => {
             const Icon = TAB_ICON[x];
             const size = tabSize(x);
+            // Only tabs with something to show under the filters; the open one stays so it never vanishes under you.
+            if (report && size === 0 && tab !== x) return null;
             return (
               <button
                 key={x}

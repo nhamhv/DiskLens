@@ -14,6 +14,28 @@ const VERSION: u32 = 2;
 /// How many scans to keep; older ones are dropped on the next save (each can be hundreds of MB).
 const MAX_CACHES: usize = 10;
 
+/// Where saved scans go.
+#[derive(Deserialize, Clone, Copy, Default, PartialEq, Eq, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum CacheMode {
+    /// Disk, unless the volume is nearly full; then memory.
+    #[default]
+    Auto,
+    Disk,
+    /// Kept in RAM for this session only.
+    Memory,
+}
+
+/// Free space to leave on the volume after saving a scan to disk.
+const MIN_FREE: u64 = 1 << 30;
+
+/// True when writing `len` bytes into `dir` would leave the volume nearly full.
+pub fn low_on_space(dir: &Path, len: u64) -> bool {
+    // The cache directory may not exist yet; ask the nearest folder that does.
+    let Some(at) = dir.ancestors().find(|p| p.exists()) else { return false };
+    crate::platform::disk_space_at(at).is_ok_and(|(_, free)| free < len.saturating_add(MIN_FREE))
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct ScanTree {
     pub root: PathBuf,
@@ -46,6 +68,9 @@ pub struct ScanMeta {
     /// When the scan this one is compared against ran, if there is one.
     #[serde(default)]
     pub prev_scanned_at: Option<u64>,
+    /// Kept in memory instead of on disk; filled in by the listing.
+    #[serde(default)]
+    pub in_memory: bool,
 }
 
 impl ScanTree {
@@ -59,6 +84,7 @@ impl ScanTree {
             elapsed_ms,
             cache_bytes: 0,
             prev_scanned_at: self.prev.as_ref().map(|p| p.scanned_at),
+            in_memory: false,
         }
     }
 }
@@ -78,10 +104,15 @@ pub fn write(dir: &Path, meta: &ScanMeta, bytes: &[u8]) -> Result<(), String> {
     let base = dir.join(key(Path::new(&meta.root)));
     // Write-then-rename so a crash never leaves a half-written cache.
     let tmp = base.with_extension("bin.tmp");
-    let mut w = BufWriter::new(File::create(&tmp).map_err(|e| e.to_string())?);
-    w.write_all(bytes).map_err(|e| e.to_string())?;
-    w.flush().map_err(|e| e.to_string())?;
-    drop(w);
+    let written = (|| {
+        let mut w = BufWriter::new(File::create(&tmp)?);
+        w.write_all(bytes)?;
+        w.flush()
+    })();
+    if let Err(e) = written {
+        let _ = fs::remove_file(&tmp); // a full disk leaves a partial file behind
+        return Err(e.to_string());
+    }
     fs::rename(&tmp, base.with_extension("bin")).map_err(|e| e.to_string())?;
     fs::write(base.with_extension("json"), serde_json::to_vec(meta).unwrap()).map_err(|e| e.to_string())?;
     prune(dir, Path::new(&meta.root));
@@ -108,6 +139,12 @@ fn prune(dir: &Path, keep: &Path) {
     }
 }
 
+/// Decodes a tree from the bytes `encode` produced.
+pub fn decode(bytes: &[u8]) -> Option<ScanTree> {
+    let (version, tree): (u32, ScanTree) = bincode::deserialize(bytes).ok()?;
+    (version == VERSION).then_some(tree)
+}
+
 pub fn load(dir: &Path, root: &Path) -> Option<ScanTree> {
     let file = File::open(dir.join(key(root)).with_extension("bin")).ok()?;
     let (version, tree): (u32, ScanTree) = bincode::deserialize_from(BufReader::new(file)).ok()?;
@@ -116,10 +153,13 @@ pub fn load(dir: &Path, root: &Path) -> Option<ScanTree> {
 
 /// The tree of a cached scan, also from the previous cache format, for comparing with a new scan.
 pub fn load_node(dir: &Path, root: &Path) -> Option<(u64, Node)> {
-    let bytes = fs::read(dir.join(key(root)).with_extension("bin")).ok()?;
-    match bincode::deserialize::<u32>(&bytes).ok()? {
-        VERSION => bincode::deserialize::<(u32, ScanTree)>(&bytes).ok().map(|(_, t)| (t.scanned_at, t.node)),
-        1 => bincode::deserialize::<(u32, v1::ScanTree)>(&bytes).ok().map(|(_, t)| (t.scanned_at, t.node.into())),
+    node_from_bytes(&fs::read(dir.join(key(root)).with_extension("bin")).ok()?)
+}
+
+pub fn node_from_bytes(bytes: &[u8]) -> Option<(u64, Node)> {
+    match bincode::deserialize::<u32>(bytes).ok()? {
+        VERSION => bincode::deserialize::<(u32, ScanTree)>(bytes).ok().map(|(_, t)| (t.scanned_at, t.node)),
+        1 => bincode::deserialize::<(u32, v1::ScanTree)>(bytes).ok().map(|(_, t)| (t.scanned_at, t.node.into())),
         _ => None,
     }
 }
@@ -179,7 +219,14 @@ mod tests {
     use super::*;
 
     fn meta(root: &str, scanned_at: u64) -> ScanMeta {
-        ScanMeta { root: root.into(), size: 0, files: 0, errors: 0, scanned_at, elapsed_ms: 0, cache_bytes: 0, prev_scanned_at: None }
+        ScanMeta { root: root.into(), size: 0, files: 0, errors: 0, scanned_at, elapsed_ms: 0, cache_bytes: 0, prev_scanned_at: None, in_memory: false }
+    }
+
+    #[test]
+    fn low_on_space_compares_with_the_volume() {
+        let dir = std::env::temp_dir();
+        assert!(low_on_space(&dir, u64::MAX / 2));
+        assert!(!low_on_space(&dir.join("does-not-exist-yet"), 0) || crate::platform::disk_space_at(&dir).unwrap().1 < MIN_FREE);
     }
 
     #[test]

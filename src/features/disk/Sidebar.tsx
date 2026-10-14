@@ -158,11 +158,18 @@ export const Sidebar = memo(function Sidebar({ listKey, tab, onTab, items, size,
       </div>
 
       <Tabs value={tab} onValueChange={(v) => onTab(v as Tab)} className="px-2">
-        <TabsList className="w-full">
+        <TabsList className="h-10 w-full">
           {TABS.map(({ id, icon: Icon, label, title }) => (
-            <TabsTrigger key={id} value={id} title={t(title)} className="min-w-0 gap-1 px-1 text-xs">
-              <Icon className="size-3.5" />
-              <span className="truncate">{t(label)}</span>
+            // Five labels don't fit side by side: inactive tabs show only their icon, the active one names itself.
+            <TabsTrigger
+              key={id}
+              value={id}
+              title={t(title)}
+              aria-label={t(title)}
+              className="group/tab min-w-0 gap-1.5 px-1.5 text-sm data-[state=active]:flex-[4]"
+            >
+              <Icon className="size-4" />
+              <span className="hidden truncate group-data-[state=active]/tab:inline">{t(label)}</span>
             </TabsTrigger>
           ))}
         </TabsList>
