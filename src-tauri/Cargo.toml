@@ -1,0 +1,47 @@
+[package]
+name = "disklens"
+version = "0.1.0"
+edition = "2021"
+description = "Fast, open-source disk space analyzer and app uninstaller for macOS"
+license = "Apache-2.0"
+repository = "https://github.com/nhamhv/DiskLens"
+
+[lib]
+name = "disklens_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rayon = "1"
+trash = "5"
+libc = "0.2"
+bincode = "1"
+base64 = "0.22"
+json_comments = "0.2.2"
+tauri-plugin-opener = "2"
+tauri-plugin-clipboard-manager = "2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+plist = "1"
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", features = ["NSString", "NSData", "NSDictionary", "NSGeometry", "NSURL", "NSValue", "NSError", "NSArray"] }
+objc2-app-kit = { version = "0.3", features = ["NSWorkspace", "NSImage", "NSImageRep", "NSBitmapImageRep", "NSGraphicsContext", "objc2-core-graphics"] }
+objc2-core-graphics = { version = "0.3", features = ["CGImage", "CGBitmapContext", "CGColorSpace", "CGContext"] }
+objc2-core-foundation = { version = "0.3", features = ["CFDictionary", "CFNumber", "CFString", "CFURL", "CFCGTypes"] }
+objc2-image-io = { version = "0.3", features = ["CGImageSource", "objc2-core-graphics"] }
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "gif", "webp", "bmp", "tiff", "rayon"] }
+
+# Scanning is CPU/syscall heavy; keep dev builds reasonably fast.
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 2

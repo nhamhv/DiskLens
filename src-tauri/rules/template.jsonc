@@ -1,0 +1,52 @@
+// DiskLens — your own developer cleanup rules.
+//
+// This file is merged over the built-in rules each time you scan. Edit it in the app
+// (Developer → Rules) or in any editor — DiskLens notices changes made outside.
+// - A rule with a built-in "id" only changes the fields you set.
+//   Add "disabled": true to turn a built-in rule off.
+// - A rule with a new "id" is added. Its items get a "Custom" badge and
+//   quick-select never picks them.
+// - Locations outside your home folder are listed but can't be deleted.
+//
+// Built-in rules and all fields:
+//   https://github.com/nhamhv/DiskLens/blob/main/src-tauri/rules/builtin.json
+//   https://github.com/nhamhv/DiskLens/blob/main/src-tauri/rules/schema.json
+//
+// Rule types:
+//   "artifact"  — folders inside projects: "dirs" next to one of the "markers" files.
+//   "location"  — fixed paths. "~", "$ENV_VAR", "{bin:tool}" (the tool's folder) and "*" work.
+//   "versioned" — fixed paths holding several versions; all but the newest are listed.
+//   "template"  — a shared layout ("vscode", "chromium") applied to each path.
+//
+// Safety: "safe" (comes back by itself), "rebuild" (needs a command — put it in "restore"),
+//         "caution" (may hold something you can't get back).
+{
+  "$schema": "https://raw.githubusercontent.com/nhamhv/DiskLens/main/src-tauri/rules/schema.json",
+  "version": 1,
+  "rules": [
+    // Examples — remove the comment markers to use them.
+
+    // { "id": "rust.target", "disabled": true },
+
+    // {
+    //   "id": "my.elm-stuff",
+    //   "type": "artifact",
+    //   "eco": "other",
+    //   "label": "elm-stuff",
+    //   "dirs": ["elm-stuff"],
+    //   "markers": ["elm.json"],
+    //   "safety": "rebuild",
+    //   "restore": "elm make"
+    // },
+
+    // {
+    //   "id": "my.tool-cache",
+    //   "type": "location",
+    //   "eco": "other",
+    //   "category": "caches",
+    //   "label": "My tool cache",
+    //   "paths": ["~/.mytool/cache"],
+    //   "safety": "safe"
+    // }
+  ]
+}

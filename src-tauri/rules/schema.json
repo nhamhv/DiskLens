@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DiskLens developer cleanup rules",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "walk": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How project folders are walked. Lists are added to the built-in ones.",
+      "properties": {
+        "maxDepth": { "type": "integer", "minimum": 1, "description": "How deep below each chosen folder to look." },
+        "skipNames": { "type": "array", "items": { "type": "string" }, "description": "Folder names never entered." },
+        "skipPaths": { "type": "array", "items": { "type": "string" }, "description": "Folders never entered. \"~\" works." }
+      }
+    },
+    "templates": {
+      "type": "object",
+      "description": "Named layouts for \"template\" rules. A template with an existing name replaces it.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "safety"],
+          "properties": {
+            "path": { "type": "string" },
+            "safety": { "$ref": "#/definitions/safety" },
+            "label": { "type": "string" },
+            "description": { "type": "string" }
+          }
+        }
+      }
+    },
+    "rules": { "type": "array", "items": { "$ref": "#/definitions/rule" } }
+  },
+  "definitions": {
+    "safety": {
+      "enum": ["safe", "rebuild", "caution"],
+      "description": "safe: comes back by itself. rebuild: needs the \"restore\" command. caution: may hold something you can't get back."
+    },
+    "strings": { "type": "array", "items": { "type": "string" } },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "description": "A built-in id overrides that rule; a new id adds one." },
+        "type": { "enum": ["artifact", "location", "versioned", "template"] },
+        "disabled": { "type": "boolean" },
+        "eco": { "type": "string", "description": "Ecosystem, e.g. node, rust, python, apple, android, flutter, php, ai, editor, other." },
+        "category": { "enum": ["sdk", "caches", "ide", "ai"], "description": "Tab for location and template rules." },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "safety": { "$ref": "#/definitions/safety" },
+        "restore": { "type": "string", "description": "Command that brings it back." },
+        "dirs": { "$ref": "#/definitions/strings", "description": "artifact: folder names (or a/b paths) inside the project." },
+        "markers": { "$ref": "#/definitions/strings", "description": "artifact: at least one of these files must sit next to the folder. \"*\" works." },
+        "inside": { "$ref": "#/definitions/strings", "description": "artifact: at least one of these must exist inside the folder." },
+        "gitIgnored": { "type": "boolean", "description": "artifact: only list the folder if git ignores it." },
+        "paths": { "$ref": "#/definitions/strings", "description": "location / versioned / template: paths. \"~\", \"$VAR\", \"{bin:tool}\" and \"*\" work." },
+        "template": { "type": "string", "description": "template: name in \"templates\" (built-in: vscode, chromium)." },
+        "apps": { "$ref": "#/definitions/strings", "description": "Apps that must be quit before deleting." },
+        "keep": { "type": "integer", "minimum": 1, "description": "versioned: how many of the newest to keep. Default 1." }
+      }
+    }
+  }
+}

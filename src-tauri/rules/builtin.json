@@ -1,0 +1,172 @@
+{
+  "$schema": "./schema.json",
+  "version": 1,
+  "walk": {
+    "maxDepth": 10,
+    "skipNames": [".git", ".hg", ".svn", "node_modules", ".Trash"],
+    "skipPaths": [
+      "~/Library", "~/Applications", "~/Pictures", "~/Music", "~/Movies", "~/Videos", "~/.Trash", "~/snap", "~/.var",
+      "~/.npm", "~/.yarn", "~/.bun", "~/.deno", "~/.nvm", "~/.cargo", "~/.rustup", "~/.pyenv", "~/.rbenv", "~/.gem",
+      "~/.gradle", "~/.m2", "~/.android", "~/.konan", "~/.pub-cache", "~/.dartServer", "~/fvm", "~/.fvm",
+      "~/.cocoapods", "~/.nuget", "~/.stack", "~/.cabal", "~/.hex", "~/.mix", "~/go/pkg",
+      "~/.cache", "~/.local", "~/.config", "~/.docker", "~/.orbstack", "~/.oh-my-zsh", "~/miniconda3", "~/anaconda3",
+      "~/.vscode", "~/.vscode-insiders", "~/.cursor", "~/.windsurf", "~/.kiro", "~/.antigravity",
+      "~/.claude", "~/.codex", "~/.gemini", "~/.ollama", "~/.lmstudio", "~/.terraform.d"
+    ]
+  },
+  "templates": {
+    "chromium": [
+      { "path": "Cache", "safety": "safe" },
+      { "path": "Code Cache", "safety": "safe" },
+      { "path": "GPUCache", "safety": "safe" },
+      { "path": "DawnGraphiteCache", "safety": "safe" },
+      { "path": "DawnWebGPUCache", "safety": "safe" },
+      { "path": "Service Worker/CacheStorage", "safety": "safe" },
+      { "path": "Crashpad", "safety": "safe" }
+    ],
+    "vscode": [
+      { "path": "CachedData", "safety": "safe" },
+      { "path": "CachedExtensionVSIXs", "safety": "safe" },
+      { "path": "CachedProfilesData", "safety": "safe" },
+      { "path": "logs", "safety": "safe" },
+      { "path": "Cache", "safety": "safe" },
+      { "path": "Code Cache", "safety": "safe" },
+      { "path": "GPUCache", "safety": "safe" },
+      { "path": "DawnGraphiteCache", "safety": "safe" },
+      { "path": "DawnWebGPUCache", "safety": "safe" },
+      { "path": "Service Worker/CacheStorage", "safety": "safe" },
+      { "path": "Crashpad", "safety": "safe" },
+      {
+        "path": "User/workspaceStorage",
+        "safety": "caution",
+        "description": "Per-workspace state: open editors, extension data, chat history."
+      }
+    ]
+  },
+  "rules": [
+    { "id": "node.modules", "type": "artifact", "eco": "node", "label": "node_modules", "dirs": ["node_modules"], "markers": ["package.json"], "safety": "rebuild", "restore": "npm install" },
+    { "id": "node.output", "type": "artifact", "eco": "node", "label": "Framework build output", "dirs": [".next", ".nuxt", ".output", ".svelte-kit", ".docusaurus", ".vercel/output"], "markers": ["package.json"], "safety": "rebuild", "restore": "npm run build" },
+    { "id": "node.dist", "type": "artifact", "eco": "node", "label": "Build output", "dirs": ["dist", "storybook-static", "coverage"], "markers": ["package.json"], "gitIgnored": true, "safety": "rebuild", "restore": "npm run build" },
+    { "id": "node.cache", "type": "artifact", "eco": "node", "label": "Tool cache", "dirs": [".turbo", ".parcel-cache", ".angular/cache", ".vite", ".expo", ".nx/cache"], "markers": ["package.json"], "safety": "safe" },
+
+    { "id": "rust.target", "type": "artifact", "eco": "rust", "label": "Cargo target", "dirs": ["target"], "markers": ["Cargo.toml"], "safety": "rebuild", "restore": "cargo build" },
+
+    { "id": "python.venv", "type": "artifact", "eco": "python", "label": "Virtual environment", "dirs": [".venv", "venv", "env", ".env"], "inside": ["pyvenv.cfg"], "safety": "caution", "restore": "uv sync  # or: pip install -r requirements.txt", "description": "Packages installed by hand are lost; anything listed in the project files can be reinstalled." },
+    { "id": "python.cache", "type": "artifact", "eco": "python", "label": "Tool cache", "dirs": [".pytest_cache", ".mypy_cache", ".ruff_cache", ".hypothesis", ".tox", ".nox"], "safety": "safe" },
+
+    { "id": "apple.pods", "type": "artifact", "eco": "apple", "label": "CocoaPods", "dirs": ["Pods"], "markers": ["Podfile"], "gitIgnored": true, "safety": "rebuild", "restore": "pod install" },
+    { "id": "apple.spm", "type": "artifact", "eco": "apple", "label": "SwiftPM build", "dirs": [".build", ".swiftpm"], "markers": ["Package.swift"], "safety": "rebuild", "restore": "swift build" },
+
+    { "id": "android.build", "type": "artifact", "eco": "android", "label": "Gradle build", "dirs": ["build"], "markers": ["build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"], "gitIgnored": true, "safety": "rebuild", "restore": "./gradlew assemble" },
+    { "id": "android.cache", "type": "artifact", "eco": "android", "label": "Gradle project cache", "dirs": [".gradle", ".kotlin", ".cxx", ".externalNativeBuild"], "markers": ["build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"], "safety": "rebuild", "restore": "./gradlew assemble" },
+    { "id": "java.maven", "type": "artifact", "eco": "java", "label": "Maven target", "dirs": ["target"], "markers": ["pom.xml"], "safety": "rebuild", "restore": "mvn package" },
+
+    { "id": "flutter.build", "type": "artifact", "eco": "flutter", "label": "Flutter build", "dirs": ["build", ".dart_tool"], "markers": ["pubspec.yaml"], "gitIgnored": true, "safety": "rebuild", "restore": "flutter pub get" },
+
+    { "id": "php.vendor", "type": "artifact", "eco": "php", "label": "Composer vendor", "dirs": ["vendor"], "markers": ["composer.json"], "gitIgnored": true, "safety": "rebuild", "restore": "composer install" },
+    { "id": "php.laravel-cache", "type": "artifact", "eco": "php", "label": "Laravel cache", "dirs": ["storage/framework/cache", "storage/framework/views", "bootstrap/cache"], "markers": ["artisan"], "safety": "rebuild", "restore": "git checkout -- storage/framework bootstrap/cache", "description": "Laravel needs these folders to exist; git checkout brings back the empty folders." },
+    { "id": "php.laravel-logs", "type": "artifact", "eco": "php", "label": "Laravel logs", "dirs": ["storage/logs"], "markers": ["artisan"], "safety": "rebuild", "restore": "git checkout -- storage/logs" },
+    { "id": "php.laravel-sessions", "type": "artifact", "eco": "php", "label": "Laravel sessions", "dirs": ["storage/framework/sessions"], "markers": ["artisan"], "safety": "caution", "restore": "git checkout -- storage/framework/sessions", "description": "Signs out everyone using file sessions." },
+    { "id": "php.symfony", "type": "artifact", "eco": "php", "label": "Symfony cache & logs", "dirs": ["var/cache", "var/log"], "markers": ["symfony.lock"], "safety": "safe" },
+    { "id": "php.phpunit", "type": "artifact", "eco": "php", "label": "PHPUnit cache", "dirs": [".phpunit.cache"], "markers": ["composer.json"], "safety": "safe" },
+
+    { "id": "ruby.bundle", "type": "artifact", "eco": "ruby", "label": "Bundler gems", "dirs": ["vendor/bundle"], "markers": ["Gemfile"], "safety": "rebuild", "restore": "bundle install" },
+    { "id": "ruby.tmp", "type": "artifact", "eco": "ruby", "label": "Rails tmp cache", "dirs": ["tmp/cache"], "markers": ["Gemfile"], "safety": "safe" },
+    { "id": "dotnet.build", "type": "artifact", "eco": "dotnet", "label": "bin / obj", "dirs": ["bin", "obj"], "markers": ["*.csproj", "*.fsproj", "*.vbproj"], "gitIgnored": true, "safety": "rebuild", "restore": "dotnet build" },
+    { "id": "elixir.build", "type": "artifact", "eco": "elixir", "label": "Mix build & deps", "dirs": ["_build", "deps"], "markers": ["mix.exs"], "gitIgnored": true, "safety": "rebuild", "restore": "mix deps.get && mix compile" },
+    { "id": "haskell.build", "type": "artifact", "eco": "haskell", "label": "Stack / Cabal build", "dirs": [".stack-work", "dist-newstyle"], "markers": ["stack.yaml", "cabal.project", "*.cabal"], "safety": "rebuild", "restore": "stack build" },
+    { "id": "scala.build", "type": "artifact", "eco": "scala", "label": "sbt build", "dirs": ["target", "project/target", ".bloop", ".metals"], "markers": ["build.sbt"], "safety": "rebuild", "restore": "sbt compile" },
+    { "id": "cpp.cmake", "type": "artifact", "eco": "cpp", "label": "CMake build", "dirs": ["build", "cmake-build-debug", "cmake-build-release"], "markers": ["CMakeLists.txt"], "gitIgnored": true, "safety": "rebuild", "restore": "cmake --build build" },
+    { "id": "zig.build", "type": "artifact", "eco": "zig", "label": "Zig cache", "dirs": [".zig-cache", "zig-cache", "zig-out"], "markers": ["build.zig"], "safety": "rebuild", "restore": "zig build" },
+    { "id": "unity.library", "type": "artifact", "eco": "gamedev", "label": "Unity Library", "dirs": ["Library", "Temp", "Obj"], "markers": ["ProjectSettings"], "inside": ["ArtifactDB", "PackageCache", "UnityLockfile"], "safety": "rebuild", "restore": "Reopen the project in Unity" },
+    { "id": "godot.cache", "type": "artifact", "eco": "gamedev", "label": "Godot import cache", "dirs": [".godot"], "markers": ["project.godot"], "safety": "safe" },
+    { "id": "terraform.modules", "type": "artifact", "eco": "terraform", "label": ".terraform", "dirs": [".terraform"], "inside": ["providers", "modules"], "safety": "rebuild", "restore": "terraform init" },
+
+    { "id": "node.npm-cache", "type": "location", "eco": "node", "category": "caches", "label": "npm cache", "paths": ["~/.npm/_cacache", "~/.npm/_npx"], "safety": "safe" },
+    { "id": "node.pnpm-store", "type": "location", "eco": "node", "category": "caches", "label": "pnpm store", "paths": ["~/Library/pnpm/store", "~/.local/share/pnpm/store", "~/.pnpm-store"], "safety": "safe", "restore": "pnpm install" },
+    { "id": "node.yarn-cache", "type": "location", "eco": "node", "category": "caches", "label": "Yarn cache", "paths": ["~/Library/Caches/Yarn", "~/.yarn/berry/cache", "~/.cache/yarn"], "safety": "safe" },
+    { "id": "node.bun-cache", "type": "location", "eco": "node", "category": "caches", "label": "Bun cache", "paths": ["~/.bun/install/cache"], "safety": "safe" },
+    { "id": "node.deno-cache", "type": "location", "eco": "node", "category": "caches", "label": "Deno cache", "paths": ["~/Library/Caches/deno", "~/.cache/deno"], "safety": "safe" },
+    { "id": "node.tool-caches", "type": "location", "eco": "node", "category": "caches", "label": "Node tool cache", "paths": ["~/Library/Caches/electron", "~/Library/Caches/node-gyp", "~/Library/Caches/typescript", "~/.cache/selenium", "~/.cache/chrome-devtools-mcp", "~/.cache/electron", "~/.cache/node-gyp", "~/.cache/typescript"], "safety": "safe" },
+    { "id": "node.browsers", "type": "versioned", "eco": "node", "label": "Test browsers", "paths": ["~/Library/Caches/ms-playwright/*", "~/Library/Caches/ms-playwright-go/*", "~/.cache/puppeteer/*/*", "~/.cache/ms-playwright/*", "~/.cache/ms-playwright-go/*"], "safety": "safe", "restore": "npx playwright install" },
+    { "id": "node.nvm", "type": "versioned", "eco": "node", "label": "Node.js (nvm)", "paths": ["~/.nvm/versions/node/*"], "safety": "caution", "restore": "nvm install <version>", "description": "Projects may still pin an older Node version." },
+
+    { "id": "rust.registry", "type": "location", "eco": "rust", "category": "caches", "label": "Cargo registry", "paths": ["~/.cargo/registry/cache", "~/.cargo/registry/src", "~/.cargo/git"], "safety": "safe" },
+    { "id": "rust.rustup-tmp", "type": "location", "eco": "rust", "category": "caches", "label": "rustup downloads", "paths": ["~/.rustup/downloads", "~/.rustup/tmp"], "safety": "safe" },
+    { "id": "rust.toolchains", "type": "versioned", "eco": "rust", "label": "Rust toolchain", "paths": ["~/.rustup/toolchains/*"], "safety": "rebuild", "restore": "rustup toolchain install <name>" },
+
+    { "id": "python.pip", "type": "location", "eco": "python", "category": "caches", "label": "pip / uv / Poetry cache", "paths": ["~/Library/Caches/pip", "~/.cache/pip", "~/.cache/uv", "~/Library/Caches/pypoetry", "~/.cache/pypoetry"], "safety": "safe" },
+    { "id": "python.conda-pkgs", "type": "location", "eco": "python", "category": "caches", "label": "Conda packages", "paths": ["~/miniconda3/pkgs", "~/anaconda3/pkgs", "/opt/homebrew/Caskroom/miniconda/base/pkgs"], "safety": "safe", "restore": "conda clean --all" },
+    { "id": "python.pyenv", "type": "versioned", "eco": "python", "label": "Python (pyenv)", "paths": ["~/.pyenv/versions/*"], "safety": "caution", "restore": "pyenv install <version>", "description": "Virtual environments made from an older Python stop working." },
+
+    { "id": "apple.derived-data", "type": "location", "eco": "apple", "category": "caches", "label": "Xcode DerivedData", "paths": ["~/Library/Developer/Xcode/DerivedData"], "safety": "safe", "apps": ["Xcode"] },
+    { "id": "apple.xcode-caches", "type": "location", "eco": "apple", "category": "caches", "label": "Xcode cache", "paths": ["~/Library/Caches/com.apple.dt.Xcode", "~/Library/Developer/Xcode/UserData/Previews", "~/Library/Developer/CoreSimulator/Caches"], "safety": "safe", "apps": ["Xcode", "Simulator"] },
+    { "id": "apple.pkg-caches", "type": "location", "eco": "apple", "category": "caches", "label": "CocoaPods / SwiftPM / Carthage cache", "paths": ["~/Library/Caches/CocoaPods", "~/Library/Caches/org.swift.swiftpm", "~/Library/Caches/org.carthage.CarthageKit"], "safety": "safe" },
+    { "id": "apple.archives", "type": "location", "eco": "apple", "category": "sdk", "label": "Xcode Archives", "paths": ["~/Library/Developer/Xcode/Archives"], "safety": "caution", "description": "Needed to symbolicate crash reports of builds you shipped." },
+    { "id": "apple.simulators", "type": "location", "eco": "apple", "category": "sdk", "label": "Simulator devices", "paths": ["~/Library/Developer/CoreSimulator/Devices"], "safety": "caution", "restore": "xcrun simctl delete unavailable", "apps": ["Simulator"], "description": "Apps and data installed in simulators are lost; Xcode recreates the devices." },
+    { "id": "apple.device-support", "type": "versioned", "eco": "apple", "label": "Device support", "paths": ["~/Library/Developer/Xcode/iOS DeviceSupport/*", "~/Library/Developer/Xcode/watchOS DeviceSupport/*", "~/Library/Developer/Xcode/tvOS DeviceSupport/*"], "safety": "rebuild", "restore": "Reconnect the device to Xcode" },
+
+    { "id": "android.gradle-caches", "type": "location", "eco": "android", "category": "caches", "label": "Gradle caches", "paths": ["~/.gradle/caches"], "safety": "rebuild", "restore": "./gradlew --refresh-dependencies" },
+    { "id": "android.gradle-daemon", "type": "location", "eco": "android", "category": "caches", "label": "Gradle daemon logs", "paths": ["~/.gradle/daemon", "~/.gradle/native", "~/.gradle/kotlin-profile"], "safety": "safe" },
+    { "id": "android.gradle-dists", "type": "versioned", "eco": "android", "label": "Gradle distribution", "paths": ["~/.gradle/wrapper/dists/*"], "safety": "rebuild", "restore": "./gradlew --version" },
+    { "id": "android.sdk", "type": "versioned", "eco": "android", "label": "Android SDK package", "paths": [
+      "$ANDROID_HOME/ndk/*", "$ANDROID_HOME/build-tools/*", "$ANDROID_HOME/platforms/*", "$ANDROID_HOME/system-images/*",
+      "~/Library/Android/sdk/ndk/*", "~/Library/Android/sdk/build-tools/*", "~/Library/Android/sdk/platforms/*", "~/Library/Android/sdk/system-images/*",
+      "~/Android/Sdk/ndk/*", "~/Android/Sdk/build-tools/*", "~/Android/Sdk/platforms/*", "~/Android/Sdk/system-images/*",
+      "/opt/homebrew/share/android-commandlinetools/ndk/*", "/opt/homebrew/share/android-commandlinetools/build-tools/*",
+      "/opt/homebrew/share/android-commandlinetools/platforms/*", "/opt/homebrew/share/android-commandlinetools/system-images/*"
+    ], "safety": "rebuild", "restore": "sdkmanager \"<package>\"" },
+    { "id": "android.avd", "type": "location", "eco": "android", "category": "sdk", "label": "Emulator", "paths": ["~/.android/avd/*.avd"], "safety": "caution", "apps": ["qemu-system-aarch64", "Android Studio"], "description": "Apps and data inside this emulator are lost." },
+    { "id": "android.cache-dirs", "type": "location", "eco": "android", "category": "caches", "label": "Android cache", "paths": ["~/.android/cache", "~/.android/build-cache"], "safety": "safe" },
+    { "id": "android.konan", "type": "location", "eco": "android", "category": "sdk", "label": "Kotlin/Native toolchain", "paths": ["~/.konan"], "safety": "rebuild", "restore": "./gradlew build" },
+    { "id": "android.studio-caches", "type": "location", "eco": "android", "category": "ide", "label": "Android Studio cache", "paths": ["~/Library/Caches/Google/AndroidStudio*", "~/Library/Logs/Google/AndroidStudio*", "~/.cache/Google/AndroidStudio*"], "safety": "safe", "apps": ["Android Studio"] },
+    { "id": "android.studio-old", "type": "versioned", "eco": "android", "label": "Android Studio", "paths": ["~/Library/Application Support/Google/AndroidStudio*", "~/Library/Caches/Google/AndroidStudio*", "~/Library/Logs/Google/AndroidStudio*", "~/.config/Google/AndroidStudio*", "~/.local/share/Google/AndroidStudio*", "~/.cache/Google/AndroidStudio*"], "safety": "safe", "description": "Settings and caches of an older Android Studio version." },
+
+    { "id": "flutter.pub-cache", "type": "location", "eco": "flutter", "category": "caches", "label": "Pub cache", "paths": ["~/.pub-cache"], "safety": "rebuild", "restore": "flutter pub get" },
+    { "id": "flutter.sdk-cache", "type": "location", "eco": "flutter", "category": "sdk", "label": "Flutter SDK cache", "paths": ["{bin:flutter}/cache"], "safety": "rebuild", "restore": "flutter precache" },
+    { "id": "flutter.dart-server", "type": "location", "eco": "flutter", "category": "caches", "label": "Dart analysis server", "paths": ["~/.dartServer"], "safety": "safe" },
+    { "id": "flutter.fvm", "type": "versioned", "eco": "flutter", "label": "Flutter (fvm)", "paths": ["~/fvm/versions/*", "~/.fvm/versions/*"], "safety": "caution", "restore": "fvm install <version>", "description": "Projects may still pin an older Flutter version." },
+
+    { "id": "php.composer-cache", "type": "location", "eco": "php", "category": "caches", "label": "Composer cache", "paths": ["~/Library/Caches/composer", "~/.composer/cache", "~/.cache/composer"], "safety": "safe" },
+    { "id": "ruby.rbenv", "type": "versioned", "eco": "ruby", "label": "Ruby (rbenv)", "paths": ["~/.rbenv/versions/*"], "safety": "caution", "restore": "rbenv install <version>" },
+    { "id": "ruby.bundle-cache", "type": "location", "eco": "ruby", "category": "caches", "label": "Bundler cache", "paths": ["~/.bundle/cache"], "safety": "safe" },
+    { "id": "dotnet.nuget", "type": "location", "eco": "dotnet", "category": "caches", "label": "NuGet packages", "paths": ["~/.nuget/packages"], "safety": "rebuild", "restore": "dotnet restore" },
+    { "id": "java.m2", "type": "location", "eco": "java", "category": "caches", "label": "Maven repository", "paths": ["~/.m2/repository"], "safety": "rebuild", "restore": "mvn install" },
+    { "id": "go.modcache", "type": "location", "eco": "go", "category": "caches", "label": "Go module cache", "paths": ["~/go/pkg/mod"], "safety": "rebuild", "restore": "go mod download", "description": "Files here are read-only; if deleting fails, run go clean -modcache." },
+    { "id": "go.build-cache", "type": "location", "eco": "go", "category": "caches", "label": "Go build cache", "paths": ["~/Library/Caches/go-build", "~/.cache/go-build"], "safety": "safe" },
+    { "id": "haskell.caches", "type": "location", "eco": "haskell", "category": "caches", "label": "Cabal packages", "paths": ["~/.cabal/packages"], "safety": "safe" },
+    { "id": "zig.cache", "type": "location", "eco": "zig", "category": "caches", "label": "Zig global cache", "paths": ["~/.cache/zig"], "safety": "safe" },
+    { "id": "terraform.plugins", "type": "location", "eco": "terraform", "category": "caches", "label": "Terraform plugin cache", "paths": ["~/.terraform.d/plugin-cache"], "safety": "safe" },
+    { "id": "cpp.compiler-cache", "type": "location", "eco": "cpp", "category": "caches", "label": "ccache / sccache", "paths": ["~/Library/Caches/ccache", "~/.ccache", "~/Library/Caches/Mozilla.sccache", "~/.cache/ccache", "~/.cache/sccache"], "safety": "safe" },
+    { "id": "gamedev.unity-cache", "type": "location", "eco": "gamedev", "category": "caches", "label": "Unity cache", "paths": ["~/Library/Unity/cache", "~/Library/Unity/Asset Store-5.x"], "safety": "safe" },
+    { "id": "other.homebrew", "type": "location", "eco": "other", "category": "caches", "label": "Homebrew downloads", "paths": ["~/Library/Caches/Homebrew", "~/.cache/Homebrew"], "safety": "safe", "restore": "brew cleanup" },
+
+    { "id": "editor.vscode", "type": "template", "template": "vscode", "eco": "editor", "category": "ide", "label": "VS Code", "paths": ["~/Library/Application Support/Code", "~/.config/Code"], "apps": ["Visual Studio Code"] },
+    { "id": "editor.vscode-insiders", "type": "template", "template": "vscode", "eco": "editor", "category": "ide", "label": "VS Code Insiders", "paths": ["~/Library/Application Support/Code - Insiders", "~/.config/Code - Insiders"], "apps": ["Visual Studio Code - Insiders"] },
+    { "id": "editor.vscodium", "type": "template", "template": "vscode", "eco": "editor", "category": "ide", "label": "VSCodium", "paths": ["~/Library/Application Support/VSCodium", "~/.config/VSCodium"], "apps": ["VSCodium"] },
+    { "id": "editor.extensions", "type": "versioned", "eco": "editor", "label": "Editor extension", "paths": ["~/.vscode/extensions/*", "~/.vscode-insiders/extensions/*", "~/.cursor/extensions/*", "~/.windsurf/extensions/*", "~/.kiro/extensions/*", "~/.antigravity/extensions/*"], "safety": "safe", "description": "An older copy of an extension; the editor uses the newest one." },
+    { "id": "editor.jetbrains-caches", "type": "location", "eco": "editor", "category": "ide", "label": "JetBrains cache", "paths": ["~/Library/Caches/JetBrains/*", "~/Library/Logs/JetBrains/*", "~/.cache/JetBrains/*"], "safety": "rebuild", "restore": "The IDE re-indexes on next start" },
+    { "id": "editor.jetbrains-old", "type": "versioned", "eco": "editor", "label": "JetBrains IDE", "paths": ["~/Library/Application Support/JetBrains/*", "~/Library/Caches/JetBrains/*", "~/Library/Logs/JetBrains/*", "~/.config/JetBrains/*", "~/.local/share/JetBrains/*", "~/.cache/JetBrains/*"], "safety": "safe", "description": "Settings, plugins and caches of an older IDE version." },
+
+    { "id": "ai.claude-vm", "type": "location", "eco": "ai", "category": "ai", "label": "Claude VM bundle", "paths": ["~/Library/Application Support/Claude/vm_bundles"], "safety": "rebuild", "apps": ["Claude"], "restore": "Claude downloads it again when needed" },
+    { "id": "ai.claude-desktop", "type": "template", "template": "chromium", "eco": "ai", "category": "ai", "label": "Claude", "paths": ["~/Library/Application Support/Claude"], "apps": ["Claude"] },
+    { "id": "ai.claude-code-versions", "type": "versioned", "eco": "ai", "label": "Claude Code", "paths": ["~/Library/Application Support/Claude/claude-code/*", "~/Library/Application Support/Claude/claude-code-vm/*", "~/.local/share/claude/versions/*"], "safety": "safe" },
+    { "id": "ai.claude-code-cache", "type": "location", "eco": "ai", "category": "ai", "label": "Claude Code cache", "paths": ["~/.claude/downloads", "~/.claude/shell-snapshots", "~/.claude/debug", "~/.claude/statsig"], "safety": "safe" },
+    { "id": "ai.claude-code-history", "type": "location", "eco": "ai", "category": "ai", "label": "Claude Code file history", "paths": ["~/.claude/file-history"], "safety": "caution", "description": "Used to rewind file edits in past sessions." },
+    { "id": "ai.claude-code-sessions", "type": "location", "eco": "ai", "category": "ai", "label": "Claude Code sessions", "paths": ["~/.claude/projects/*"], "safety": "caution", "description": "Conversation transcripts; you can no longer resume these sessions." },
+    { "id": "ai.codex-sessions", "type": "location", "eco": "ai", "category": "ai", "label": "Codex sessions", "paths": ["~/.codex/sessions", "~/.codex/archived_sessions"], "safety": "caution", "description": "Conversation history; you can no longer resume these sessions." },
+    { "id": "ai.codex-cache", "type": "location", "eco": "ai", "category": "ai", "label": "Codex cache & logs", "paths": ["~/.codex/cache", "~/.codex/log", "~/.codex/logs_*.sqlite", "~/.cache/codex-runtimes"], "safety": "safe", "apps": ["Codex"] },
+    { "id": "ai.codex-app", "type": "template", "template": "chromium", "eco": "ai", "category": "ai", "label": "Codex", "paths": ["~/Library/Application Support/Codex", "~/.config/Codex"], "apps": ["Codex"] },
+    { "id": "ai.antigravity", "type": "template", "template": "vscode", "eco": "ai", "category": "ai", "label": "Antigravity", "paths": ["~/Library/Application Support/Antigravity", "~/Library/Application Support/Antigravity IDE", "~/.config/Antigravity"], "apps": ["Antigravity", "Antigravity IDE"] },
+    { "id": "ai.antigravity-recordings", "type": "location", "eco": "ai", "category": "ai", "label": "Antigravity browser recordings", "paths": ["~/.gemini/antigravity-ide/browser_recordings", "~/.gemini/antigravity/browser_recordings"], "safety": "safe" },
+    { "id": "ai.antigravity-data", "type": "location", "eco": "ai", "category": "ai", "label": "Antigravity backup & browser profile", "paths": ["~/.gemini/antigravity-backup", "~/.gemini/antigravity-browser-profile"], "safety": "caution", "apps": ["Antigravity", "Antigravity IDE"], "description": "Signed-in browser sessions and backups made by Antigravity." },
+    { "id": "ai.gemini-tmp", "type": "location", "eco": "ai", "category": "ai", "label": "Gemini CLI temp", "paths": ["~/.gemini/tmp"], "safety": "safe" },
+    { "id": "ai.cursor", "type": "template", "template": "vscode", "eco": "ai", "category": "ai", "label": "Cursor", "paths": ["~/Library/Application Support/Cursor", "~/.config/Cursor"], "apps": ["Cursor"] },
+    { "id": "ai.windsurf", "type": "template", "template": "vscode", "eco": "ai", "category": "ai", "label": "Windsurf", "paths": ["~/Library/Application Support/Windsurf", "~/.config/Windsurf"], "apps": ["Windsurf"] },
+    { "id": "ai.kiro", "type": "template", "template": "vscode", "eco": "ai", "category": "ai", "label": "Kiro", "paths": ["~/Library/Application Support/Kiro", "~/.config/Kiro"], "apps": ["Kiro"] },
+    { "id": "ai.copilot", "type": "location", "eco": "ai", "category": "ai", "label": "GitHub Copilot cache", "paths": ["~/.cache/github-copilot"], "safety": "safe" },
+    { "id": "ai.ollama", "type": "location", "eco": "ai", "category": "ai", "label": "Ollama models", "paths": ["~/.ollama/models"], "safety": "caution", "apps": ["Ollama"], "restore": "ollama pull <model>", "description": "Every model must be downloaded again." },
+    { "id": "ai.lmstudio", "type": "location", "eco": "ai", "category": "ai", "label": "LM Studio models", "paths": ["~/.lmstudio/models", "~/.cache/lm-studio/models"], "safety": "caution", "apps": ["LM Studio"], "description": "Every model must be downloaded again." },
+    { "id": "ai.model-caches", "type": "location", "eco": "ai", "category": "ai", "label": "Model download cache", "paths": ["~/.cache/huggingface/hub", "~/.cache/torch", "~/.cache/modelscope", "~/.cache/whisper"], "safety": "rebuild", "restore": "Downloaded again on next use" }
+  ]
+}
