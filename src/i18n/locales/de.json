@@ -17,11 +17,11 @@
   },
   "speed": {
     "low": "Geringe CPU-Last",
-    "lowHint": "2 Hintergrund-Threads auf Effizienzkernen – am langsamsten, kaum spürbar",
     "balanced": "Ausgewogen",
-    "balancedHint": "Die Hälfte der CPU-Kerne",
     "fast": "Schnell",
-    "fastHint": "Alle Kerne – am schnellsten fertig, Lüfter können hochdrehen"
+    "min": "Minimal",
+    "high": "Hoch",
+    "threads": "{{count}} von {{cpus}} Threads"
   },
   "welcome": {
     "tagline": "Sieh, was auf deinem Mac Speicherplatz belegt.",
@@ -42,7 +42,11 @@
     "fdaDevHint": "Läuft mit <code>npm run tauri dev</code>? Erteile der App Zugriff, die es gestartet hat (VS Code / iTerm). Klicke bei der fertigen App auf <b>+</b> und wähle <code>DiskLens.app</code>.",
     "taglineOther": "Sieh, was auf deinem Computer Platz belegt.",
     "photos": "Fotos",
-    "dropHint": "Tipp: Zieh einen Ordner auf dieses Fenster, um ihn zu scannen."
+    "dropHint": "Tipp: Zieh einen Ordner auf dieses Fenster, um ihn zu scannen.",
+    "cacheInMemoryHint": "Im Arbeitsspeicher — beim Schließen der App weg",
+    "cacheDisk": "Festplatte",
+    "cacheRam": "RAM",
+    "cacheRamNotice": "Die Festplatte ist fast voll, daher liegen einige Scans nur im RAM und gehen beim Schließen der App verloren."
   },
   "disk": {
     "backHint": "Zurück zum Start (stoppt den Scan)",
@@ -139,7 +143,11 @@
     "trashNote_one": "Du kannst es aus dem Papierkorb wiederherstellen. Die <b>{{size}}</b> werden erst nach dem Leeren des Papierkorbs freigegeben.",
     "trashNote_other": "Du kannst sie aus dem Papierkorb wiederherstellen. Die <b>{{size}}</b> werden erst nach dem Leeren des Papierkorbs freigegeben.",
     "riskyWarning_one": "{{count, number}} Element ({{size}}) enthält App-Daten, Mails, Fotos, Systemdateien oder einen Git-Verlauf. Das Löschen kann eine App beschädigen oder Daten vernichten.",
-    "riskyWarning_other": "{{count, number}} Elemente ({{size}}) enthalten App-Daten, Mails, Fotos, Systemdateien oder einen Git-Verlauf. Das Löschen kann Apps beschädigen oder Daten vernichten."
+    "riskyWarning_other": "{{count, number}} Elemente ({{size}}) enthalten App-Daten, Mails, Fotos, Systemdateien oder einen Git-Verlauf. Das Löschen kann Apps beschädigen oder Daten vernichten.",
+    "showLess": "Weniger anzeigen",
+    "skipHour": "1 Stunde lang nicht erneut fragen",
+    "sortName": "Name",
+    "sortSize": "Größe"
   },
   "apps": {
     "title": "Programme",
@@ -289,7 +297,13 @@
     "editorHint": "JSON mit Kommentaren. Eine integrierte id ändert nur die gesetzten Felder; eine neue id fügt eine Regel hinzu.",
     "rulesChangedOutside": "Die Regeldatei hat sich seit diesem Scan geändert.",
     "inYourFile": "In deiner Datei",
-    "scannedAgo": "gescannt {{when}}"
+    "scannedAgo": "gescannt {{when}}",
+    "filterEco": "Ökosystem",
+    "filterSafety": "Sicherheit",
+    "filterAge": "Alter",
+    "allLevels": "Alle Stufen",
+    "resetFilters": "Zurücksetzen",
+    "nSelected": "{{count}} ausgewählt"
   },
   "kinds": {
     "trash": "Papierkorb",
@@ -436,6 +450,42 @@
     "selected_other": "{{count, number}} ausgewählt · {{size}}",
     "quickLookHint": "Leertaste für Vorschau · Doppelklick zum Öffnen",
     "deleteForever": "Endgültig löschen…",
-    "moveToTrash": "In den Papierkorb…"
+    "moveToTrash": "In den Papierkorb…",
+    "view": "Foto ansehen",
+    "sharp": "Scharfe Vorschaubilder",
+    "sharpHint": "Größere Vorschaubilder, die auf hochauflösenden Displays scharf bleiben (laden etwas langsamer)",
+    "openExternal": "Mit Standard-App öffnen",
+    "close": "Schließen",
+    "prev": "Zurück",
+    "next": "Weiter"
+  },
+  "cacheMode": {
+    "label": "Scans speichern auf",
+    "auto": "Auto",
+    "disk": "Festplatte",
+    "memory": "Speicher",
+    "autoHint": "Festplatte, bei fast voller Festplatte Arbeitsspeicher",
+    "diskHint": "Immer auf der Festplatte speichern",
+    "memoryHint": "Nur im Arbeitsspeicher; beim Schließen der App weg"
+  },
+  "report": {
+    "button": "Problem melden",
+    "title": "Problem melden",
+    "description": "Dies öffnet ein vorausgefülltes GitHub-Issue. DiskLens sendet selbst nichts: Lesen Sie den Text unten und senden Sie ihn selbst ab.",
+    "preview": "Text, der dem Issue hinzugefügt wird",
+    "crashCount": "Auf diesem Computer gespeicherte Absturzprotokolle: {{count}}",
+    "noCrashes": "Keine Abstürze aufgezeichnet.",
+    "openFolder": "Absturzprotokolle anzeigen",
+    "copy": "Text kopieren",
+    "copied": "Kopiert",
+    "openIssue": "GitHub-Issue öffnen",
+    "attachHint": "Wenn DiskLens abgestürzt ist, hängen Sie die neueste Datei aus dem Ordner der Absturzprotokolle an das Issue an."
+  },
+  "stats": {
+    "title": "Anonyme Startzahl teilen?",
+    "description": "DiskLens kann zählen, wie viele Personen die App täglich öffnen. Gesendet werden nur die App-Version und Ihr Betriebssystem, niemals Dateinamen, Pfade oder Scan-Ergebnisse. Absturzprotokolle bleiben auf Ihrem Computer und werden nie gesendet.",
+    "allow": "Teilen",
+    "deny": "Nein danke",
+    "toggle": "Anonyme Startzahl teilen"
   }
 }

@@ -15,11 +15,11 @@
   },
   "speed": {
     "low": "CPU Rendah",
-    "lowHint": "2 thread latar belakang pada core efisiensi — paling lambat, hampir tidak terasa",
     "balanced": "Seimbang",
-    "balancedHint": "Setengah dari core CPU",
     "fast": "Cepat",
-    "fastHint": "Semua core — selesai paling cepat, kipas mungkin berputar kencang"
+    "min": "Minimum",
+    "high": "Tinggi",
+    "threads": "{{count}} dari {{cpus}} thread"
   },
   "welcome": {
     "tagline": "Lihat apa yang memenuhi ruang penyimpanan Mac Anda.",
@@ -40,7 +40,11 @@
     "fdaDevHint": "Menjalankan dengan <code>npm run tauri dev</code>? Beri akses ke app yang meluncurkannya (VS Code / iTerm). Untuk app hasil build, klik <b>+</b> lalu pilih <code>DiskLens.app</code>.",
     "taglineOther": "Lihat apa yang memakan ruang di komputer Anda.",
     "photos": "Foto",
-    "dropHint": "Tips: jatuhkan folder ke jendela ini untuk memindainya."
+    "dropHint": "Tips: jatuhkan folder ke jendela ini untuk memindainya.",
+    "cacheInMemoryHint": "Di memori — hilang saat aplikasi ditutup",
+    "cacheDisk": "Disk",
+    "cacheRam": "RAM",
+    "cacheRamNotice": "Disk hampir penuh, jadi beberapa pindaian hanya disimpan di RAM dan akan hilang saat aplikasi ditutup."
   },
   "disk": {
     "backHint": "Kembali ke awal (menghentikan pemindaian)",
@@ -134,7 +138,11 @@
     "partial": "{{done, number}} dari {{what}}",
     "failed": "{{count, number}} tidak dapat dihapus",
     "trashNote_other": "Anda dapat memulihkannya dari Tong Sampah. <b>{{size}}</b> baru dikosongkan setelah Anda mengosongkan Tong Sampah.",
-    "riskyWarning_other": "{{count, number}} item ({{size}}) berisi data aplikasi, email, foto, file sistem, atau riwayat Git. Menghapusnya dapat merusak aplikasi atau menghilangkan data."
+    "riskyWarning_other": "{{count, number}} item ({{size}}) berisi data aplikasi, email, foto, file sistem, atau riwayat Git. Menghapusnya dapat merusak aplikasi atau menghilangkan data.",
+    "showLess": "Ciutkan",
+    "skipHour": "Jangan tanya lagi selama 1 jam",
+    "sortName": "Nama",
+    "sortSize": "Ukuran"
   },
   "apps": {
     "title": "Aplikasi",
@@ -282,7 +290,13 @@
     "editorHint": "JSON dengan komentar. id bawaan hanya mengubah kolom yang Anda isi; id baru menambah aturan.",
     "rulesChangedOutside": "File aturan berubah sejak pemindaian ini.",
     "inYourFile": "Di file Anda",
-    "scannedAgo": "dipindai {{when}}"
+    "scannedAgo": "dipindai {{when}}",
+    "filterEco": "Ekosistem",
+    "filterSafety": "Keamanan",
+    "filterAge": "Usia",
+    "allLevels": "Semua tingkat",
+    "resetFilters": "Setel ulang",
+    "nSelected": "{{count}} dipilih"
   },
   "kinds": {
     "trash": "Tong Sampah",
@@ -423,6 +437,42 @@
     "selected_other": "{{count, number}} dipilih · {{size}}",
     "quickLookHint": "Spasi untuk pratinjau · klik ganda untuk membuka",
     "deleteForever": "Hapus permanen…",
-    "moveToTrash": "Pindahkan ke Tempat Sampah…"
+    "moveToTrash": "Pindahkan ke Tempat Sampah…",
+    "view": "Lihat foto",
+    "sharp": "Thumbnail tajam",
+    "sharpHint": "Thumbnail lebih besar yang tetap tajam di layar resolusi tinggi (sedikit lebih lambat dimuat)",
+    "openExternal": "Buka dengan aplikasi bawaan",
+    "close": "Tutup",
+    "prev": "Sebelumnya",
+    "next": "Berikutnya"
+  },
+  "cacheMode": {
+    "label": "Simpan pindaian di",
+    "auto": "Otomatis",
+    "disk": "Disk",
+    "memory": "Memori",
+    "autoHint": "Disk, atau memori jika disk hampir penuh",
+    "diskHint": "Selalu simpan di disk",
+    "memoryHint": "Hanya di memori; hilang saat aplikasi ditutup"
+  },
+  "report": {
+    "button": "Laporkan masalah",
+    "title": "Laporkan masalah",
+    "description": "Ini membuka issue GitHub yang sudah terisi. DiskLens tidak mengirim apa pun sendiri: baca teks di bawah lalu kirim sendiri.",
+    "preview": "Teks yang ditambahkan ke issue",
+    "crashCount": "Log crash tersimpan di komputer ini: {{count}}",
+    "noCrashes": "Belum ada crash tercatat.",
+    "openFolder": "Tampilkan log crash",
+    "copy": "Salin teks",
+    "copied": "Tersalin",
+    "openIssue": "Buka issue GitHub",
+    "attachHint": "Jika DiskLens crash, lampirkan file terbaru dari folder log crash ke issue."
+  },
+  "stats": {
+    "title": "Bagikan hitungan peluncuran anonim?",
+    "description": "DiskLens dapat menghitung berapa banyak orang yang membukanya setiap hari. Hanya versi aplikasi dan OS Anda yang dikirim, tidak pernah nama file, path, atau hasil pemindaian. Log crash tetap di komputer Anda dan tidak pernah dikirim.",
+    "allow": "Bagikan",
+    "deny": "Tidak, terima kasih",
+    "toggle": "Bagikan hitungan peluncuran anonim"
   }
 }

@@ -15,11 +15,11 @@
   },
   "speed": {
     "low": "低 CPU",
-    "lowHint": "高効率コア上の 2 つのバックグラウンドスレッド — 最も遅いが、ほとんど気にならない",
     "balanced": "バランス",
-    "balancedHint": "CPU コアの半分を使用",
     "fast": "高速",
-    "fastHint": "全コアを使用 — 最速で終わるが、ファンが回ることがある"
+    "min": "最小",
+    "high": "高",
+    "threads": "{{count}} / {{cpus}} スレッド"
   },
   "welcome": {
     "tagline": "Mac の容量を何が使っているかを確認しましょう。",
@@ -40,7 +40,11 @@
     "fdaDevHint": "<code>npm run tauri dev</code> で実行中ですか？起動元のアプリ（VS Code / iTerm）に許可を与えてください。ビルド済みアプリの場合は <b>+</b> をクリックして <code>DiskLens.app</code> を選びます。",
     "taglineOther": "コンピュータの容量を何が使っているかを確認します。",
     "photos": "写真",
-    "dropHint": "ヒント：フォルダをこのウインドウにドロップするとスキャンできます。"
+    "dropHint": "ヒント：フォルダをこのウインドウにドロップするとスキャンできます。",
+    "cacheInMemoryHint": "メモリに保持中 — アプリを閉じると消えます",
+    "cacheDisk": "ディスク",
+    "cacheRam": "メモリ",
+    "cacheRamNotice": "ディスクの空きが少ないため、一部のスキャン結果はメモリのみに保持され、アプリを閉じると失われます。"
   },
   "disk": {
     "backHint": "最初の画面に戻る（スキャンを停止）",
@@ -134,7 +138,11 @@
     "donePermanentHint": "{{size}} を解放しました",
     "partial": "{{what}} のうち {{done, number}} 件",
     "failed": "{{count, number}} 件を削除できませんでした",
-    "riskyWarning_other": "{{count, number}} 項目（{{size}}）にアプリのデータ、メール、写真、システムファイル、または Git 履歴が含まれています。削除するとアプリが壊れたりデータが失われたりする可能性があります。"
+    "riskyWarning_other": "{{count, number}} 項目（{{size}}）にアプリのデータ、メール、写真、システムファイル、または Git 履歴が含まれています。削除するとアプリが壊れたりデータが失われたりする可能性があります。",
+    "showLess": "閉じる",
+    "skipHour": "1時間は再確認しない",
+    "sortName": "名前",
+    "sortSize": "サイズ"
   },
   "apps": {
     "title": "アプリケーション",
@@ -282,7 +290,13 @@
     "editorHint": "コメント付き JSON。組み込みの id は指定したフィールドだけを変更し、新しい id はルールを追加します。",
     "rulesChangedOutside": "このスキャン以降にルールファイルが変更されました。",
     "inYourFile": "あなたのファイル内",
-    "scannedAgo": "{{when}}にスキャン"
+    "scannedAgo": "{{when}}にスキャン",
+    "filterEco": "エコシステム",
+    "filterSafety": "安全度",
+    "filterAge": "経過期間",
+    "allLevels": "すべてのレベル",
+    "resetFilters": "リセット",
+    "nSelected": "{{count}} 件選択"
   },
   "kinds": {
     "trash": "ゴミ箱",
@@ -423,6 +437,42 @@
     "selected_other": "{{count, number}} 個を選択 · {{size}}",
     "quickLookHint": "スペースでプレビュー · ダブルクリックで開く",
     "deleteForever": "完全に削除…",
-    "moveToTrash": "ゴミ箱に入れる…"
+    "moveToTrash": "ゴミ箱に入れる…",
+    "view": "写真を表示",
+    "sharp": "高精細サムネイル",
+    "sharpHint": "高解像度の画面でもくっきり見える大きめのサムネイル（読み込みはやや遅め）",
+    "openExternal": "既定のアプリで開く",
+    "close": "閉じる",
+    "prev": "前へ",
+    "next": "次へ"
+  },
+  "cacheMode": {
+    "label": "スキャン結果の保存先",
+    "auto": "自動",
+    "disk": "ディスク",
+    "memory": "メモリ",
+    "autoHint": "ディスクに保存。空きが少ないときはメモリ",
+    "diskHint": "常にディスクに保存",
+    "memoryHint": "メモリのみに保持。アプリを閉じると消えます"
+  },
+  "report": {
+    "button": "問題を報告",
+    "title": "問題を報告",
+    "description": "内容が入力済みの GitHub issue を開きます。DiskLens 自体は何も送信しません。下の内容を確認してから、ご自身で送信してください。",
+    "preview": "issue に追加される内容",
+    "crashCount": "このコンピュータに保存されたクラッシュログ: {{count}}",
+    "noCrashes": "クラッシュの記録はありません。",
+    "openFolder": "クラッシュログを表示",
+    "copy": "内容をコピー",
+    "copied": "コピーしました",
+    "openIssue": "GitHub issue を開く",
+    "attachHint": "DiskLens がクラッシュした場合は、クラッシュログフォルダ内の最新のファイルを issue に添付してください。"
+  },
+  "stats": {
+    "title": "匿名の起動回数を共有しますか?",
+    "description": "DiskLens は、毎日何人が起動したかを数えることができます。送信するのはアプリのバージョンと OS のみで、ファイル名、パス、スキャン結果は一切送信しません。クラッシュログはお使いのコンピュータに残り、送信されることはありません。",
+    "allow": "共有する",
+    "deny": "共有しない",
+    "toggle": "匿名の起動回数を共有"
   }
 }

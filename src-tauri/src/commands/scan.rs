@@ -1,9 +1,9 @@
 //! Scanning, cached results and browsing the scanned tree.
 
-use crate::cache::{self, Prev, ScanMeta, ScanTree};
+use crate::cache::{self, CacheMode, Prev, ScanMeta, ScanTree};
 use crate::classify::{self, Category, Class, Classifier, Safety, Tally};
 use crate::scanner::{self, Node, ScanCtx};
-use crate::state::{blocking, build_pool, cache_dir, now_secs, save_in_background, write_cache, AppState, Speed};
+use crate::state::{self, blocking, build_pool, now_secs, save_in_background, write_cache, AppState, Speed};
 use serde::Serialize;
 use std::cmp::Reverse;
 use std::collections::{BinaryHeap, HashMap};
@@ -127,7 +127,7 @@ pub fn start_scan(path: String, speed: Speed, app: AppHandle, state: State<AppSt
             std::thread::spawn(move || {
                 let (scanned_at, node) = match previous {
                     Some(t) => (t.scanned_at, t.node),
-                    None => cache::load_node(&cache_dir(&app).ok()?, &root)?,
+                    None => state::cached_node(&app, &root)?,
                 };
                 Some(Prev { scanned_at, node: node.pruned(PREV_MIN) })
             })
@@ -179,7 +179,7 @@ pub fn start_scan(path: String, speed: Speed, app: AppHandle, state: State<AppSt
         }
         let _ = app.emit("scan-done", meta.clone());
         if let Ok(bytes) = encoded {
-            write_cache(&app, &meta, &bytes);
+            write_cache(&app, &meta, bytes);
         }
     });
     Ok(())
@@ -228,8 +228,8 @@ pub async fn rescan_folder(path: String, speed: Speed, app: AppHandle) -> Result
 /// Loads a cached scan for `path`, if one exists, and makes it current.
 #[tauri::command]
 pub async fn load_cache(path: String, app: AppHandle) -> Result<Option<ScanMeta>, String> {
-    let dir = cache_dir(&app)?;
-    let Some(tree) = blocking(move || cache::load(&dir, Path::new(&path))).await? else {
+    let loader = app.clone();
+    let Some(tree) = blocking(move || state::cached_tree(&loader, Path::new(&path))).await? else {
         return Ok(None);
     };
     let meta = tree.meta(0);
@@ -241,19 +241,44 @@ pub async fn load_cache(path: String, app: AppHandle) -> Result<Option<ScanMeta>
 
 #[tauri::command]
 pub fn list_caches(app: AppHandle) -> Result<Vec<ScanMeta>, String> {
-    Ok(cache::list(&cache_dir(&app)?))
+    Ok(state::list_caches(&app))
 }
 
 #[tauri::command]
 pub fn forget_cache(path: String, app: AppHandle) -> Result<(), String> {
-    cache::remove(&cache_dir(&app)?, Path::new(&path));
+    state::forget_cache(&app, Path::new(&path));
     Ok(())
 }
 
 /// Forgets every cached scan; returns the bytes freed.
 #[tauri::command]
 pub fn clear_caches(app: AppHandle) -> Result<u64, String> {
-    Ok(cache::clear(&cache_dir(&app)?))
+    Ok(state::clear_caches(&app))
+}
+
+/// Logical CPUs and how many scan threads each speed level uses on this machine.
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ThreadCounts {
+    pub cpus: usize,
+    pub min: usize,
+    pub low: usize,
+    pub balanced: usize,
+    pub high: usize,
+    pub fast: usize,
+}
+
+#[tauri::command]
+pub fn scan_threads() -> ThreadCounts {
+    let cpus = state::cpu_threads();
+    let n = |s| state::threads_for(s, cpus);
+    ThreadCounts { cpus, min: n(Speed::Min), low: n(Speed::Low), balanced: n(Speed::Balanced), high: n(Speed::High), fast: n(Speed::Fast) }
+}
+
+/// Chooses where saved scans go: disk, memory, or whichever fits (`auto`).
+#[tauri::command]
+pub fn set_cache_mode(mode: CacheMode, state: State<AppState>) {
+    *state.cache_mode.lock().unwrap() = mode;
 }
 
 #[tauri::command]

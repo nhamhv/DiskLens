@@ -15,11 +15,11 @@
   },
   "speed": {
     "low": "低 CPU",
-    "lowHint": "能效核心上的 2 个后台线程 — 最慢，几乎无感",
     "balanced": "均衡",
-    "balancedHint": "使用一半的 CPU 核心",
     "fast": "快速",
-    "fastHint": "使用全部核心 — 最快完成，风扇可能会转"
+    "min": "最低",
+    "high": "高",
+    "threads": "{{count}} / {{cpus}} 个线程"
   },
   "welcome": {
     "tagline": "看看是什么占用了你的 Mac 空间。",
@@ -40,7 +40,11 @@
     "fdaDevHint": "正在用 <code>npm run tauri dev</code> 运行？请给启动它的应用（VS Code / iTerm）授权。对于构建好的应用，点击 <b>+</b> 并选择 <code>DiskLens.app</code>。",
     "taglineOther": "看看是什么占用了电脑的空间。",
     "photos": "照片",
-    "dropHint": "提示：将文件夹拖到此窗口即可扫描。"
+    "dropHint": "提示：将文件夹拖到此窗口即可扫描。",
+    "cacheInMemoryHint": "保存在内存中——关闭应用后消失",
+    "cacheDisk": "磁盘",
+    "cacheRam": "内存",
+    "cacheRamNotice": "磁盘快满了，部分扫描结果仅保存在内存中，关闭应用后将丢失。"
   },
   "disk": {
     "backHint": "返回开始界面（会停止扫描）",
@@ -134,7 +138,11 @@
     "donePermanentHint": "已释放 {{size}}",
     "partial": "{{what}} 中的 {{done, number}} 项",
     "failed": "{{count, number}} 项无法删除",
-    "riskyWarning_other": "{{count, number}} 个项目（{{size}}）包含应用数据、邮件、照片、系统文件或 Git 历史。删除可能导致应用损坏或数据丢失。"
+    "riskyWarning_other": "{{count, number}} 个项目（{{size}}）包含应用数据、邮件、照片、系统文件或 Git 历史。删除可能导致应用损坏或数据丢失。",
+    "showLess": "收起",
+    "skipHour": "1 小时内不再询问",
+    "sortName": "名称",
+    "sortSize": "大小"
   },
   "apps": {
     "title": "应用程序",
@@ -282,7 +290,13 @@
     "editorHint": "带注释的 JSON。内置 id 只修改你设置的字段；新 id 会添加规则。",
     "rulesChangedOutside": "自本次扫描以来规则文件已更改。",
     "inYourFile": "在你的文件中",
-    "scannedAgo": "扫描于{{when}}"
+    "scannedAgo": "扫描于{{when}}",
+    "filterEco": "生态",
+    "filterSafety": "安全级别",
+    "filterAge": "时长",
+    "allLevels": "所有级别",
+    "resetFilters": "重置",
+    "nSelected": "已选 {{count}} 项"
   },
   "kinds": {
     "trash": "废纸篓",
@@ -423,6 +437,42 @@
     "selected_other": "已选 {{count, number}} 个 · {{size}}",
     "quickLookHint": "按空格预览 · 双击打开",
     "deleteForever": "永久删除…",
-    "moveToTrash": "移到废纸篓…"
+    "moveToTrash": "移到废纸篓…",
+    "view": "查看照片",
+    "sharp": "清晰缩略图",
+    "sharpHint": "更大的缩略图，在高分辨率屏幕上保持清晰（加载稍慢）",
+    "openExternal": "用默认应用打开",
+    "close": "关闭",
+    "prev": "上一张",
+    "next": "下一张"
+  },
+  "cacheMode": {
+    "label": "扫描结果保存到",
+    "auto": "自动",
+    "disk": "磁盘",
+    "memory": "内存",
+    "autoHint": "保存到磁盘；磁盘快满时保存到内存",
+    "diskHint": "始终保存到磁盘",
+    "memoryHint": "仅保存在内存中，关闭应用后消失"
+  },
+  "report": {
+    "button": "报告问题",
+    "title": "报告问题",
+    "description": "这会打开一个已预填内容的 GitHub issue。DiskLens 自身不会发送任何数据：请先阅读下方内容，再自行提交。",
+    "preview": "将加入 issue 的内容",
+    "crashCount": "本机已保存的崩溃日志：{{count}}",
+    "noCrashes": "没有崩溃记录。",
+    "openFolder": "显示崩溃日志",
+    "copy": "复制内容",
+    "copied": "已复制",
+    "openIssue": "打开 GitHub issue",
+    "attachHint": "如果 DiskLens 崩溃了，请把崩溃日志文件夹中最新的文件附加到 issue。"
+  },
+  "stats": {
+    "title": "分享匿名启动次数？",
+    "description": "DiskLens 可以统计每天有多少人打开它。只发送应用版本和操作系统，绝不发送文件名、路径或扫描结果。崩溃日志只保存在你的电脑上，绝不会被发送。",
+    "allow": "同意",
+    "deny": "不用了",
+    "toggle": "分享匿名启动次数"
   }
 }

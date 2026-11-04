@@ -17,9 +17,9 @@ pub fn set_thread_priority(speed: Speed) {
     use libc::qos_class_t::*;
     // Background QoS keeps the threads on efficiency cores and throttles their disk I/O.
     let qos = match speed {
-        Speed::Low => QOS_CLASS_BACKGROUND,
+        Speed::Min | Speed::Low => QOS_CLASS_BACKGROUND,
         Speed::Balanced => QOS_CLASS_UTILITY,
-        Speed::Fast => QOS_CLASS_USER_INITIATED,
+        Speed::High | Speed::Fast => QOS_CLASS_USER_INITIATED,
     };
     unsafe {
         libc::pthread_set_qos_class_self_np(qos, 0);
@@ -100,6 +100,13 @@ pub fn open_privacy_settings() -> Result<(), String> {
 /// binary (VS Code, iTerm, ...), not to this app.
 pub fn has_full_disk_access() -> bool {
     super::home().is_some_and(|home| std::fs::File::open(home.join("Library/Application Support/com.apple.TCC/TCC.db")).is_ok())
+}
+
+/// "macOS 14.5", for bug reports.
+pub fn os_version() -> String {
+    let out = std::process::Command::new("sw_vers").arg("-productVersion").output().ok();
+    let v = out.map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string()).unwrap_or_default();
+    if v.is_empty() { "macOS".into() } else { format!("macOS {v}") }
 }
 
 pub fn hidden_space() -> HiddenSpace {

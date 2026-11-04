@@ -2,6 +2,7 @@
 
 pub mod apps;
 pub mod delete;
+pub mod diagnostics;
 pub mod dev;
 pub mod photos;
 pub mod scan;

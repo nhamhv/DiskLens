@@ -16,8 +16,8 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            targets: ${{ matrix.targets }}
-            args: ${{ matrix.args }}
+            targets: aarch64-apple-darwin,x86_64-apple-darwin
+            args: --target universal-apple-darwin
           # The oldest supported Ubuntu, so the binaries' glibc works on newer distros too.
           - os: ubuntu-22.04
             targets: ""
@@ -46,6 +46,8 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Enables the opt-in launch count. Leave the secret unset and the build sends nothing.
+          APTABASE_APP_KEY: ${{ secrets.APTABASE_APP_KEY }}
           # Optional code signing + notarization. Leave these secrets unset for unsigned builds.
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}

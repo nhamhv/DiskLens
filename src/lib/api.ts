@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { AppInfo, DeleteResult, DevReport, DiskInfo, HiddenSpace, PhotoReport, PlatformFeatures, RulesCheck, RulesFile, RulesSave, WorktreeStatus, UpdateInfo, Entry, Listing, ScanMeta, Speed, Summary } from "@/lib/types";
+import type { AppInfo, CrashLog, IssueReport, TelemetryStatus, DeleteResult, DevReport, DiskInfo, HiddenSpace, PhotoReport, PlatformFeatures, RulesCheck, RulesFile, RulesSave, WorktreeStatus, UpdateInfo, Entry, Listing, ScanMeta, CacheMode, Speed, Summary, ThreadCounts } from "@/lib/types";
 
 export const api = {
   startScan: (path: string, speed: Speed) => invoke<void>("start_scan", { path, speed }),
@@ -9,6 +9,8 @@ export const api = {
   listCaches: () => invoke<ScanMeta[]>("list_caches"),
   forgetCache: (path: string) => invoke<void>("forget_cache", { path }),
   clearCaches: () => invoke<number>("clear_caches"),
+  scanThreads: () => invoke<ThreadCounts>("scan_threads"),
+  setCacheMode: (mode: CacheMode) => invoke<void>("set_cache_mode", { mode }),
   /** Top-level Trash items, or null when the Trash can't be read (no Full Disk Access). */
   trashContents: () => invoke<Entry[] | null>("trash_contents"),
   listChildren: (path: string) => invoke<Listing>("list_children", { path }),
@@ -54,6 +56,14 @@ export const api = {
   devRulesRead: () => invoke<RulesFile>("dev_rules_read"),
   devRulesStat: () => invoke<number | null>("dev_rules_stat"),
   devRulesCheck: (text: string) => invoke<RulesCheck>("dev_rules_check", { text }),
+  telemetryStatus: () => invoke<TelemetryStatus>("telemetry_status"),
+  telemetrySetConsent: (agreed: boolean) => invoke<void>("telemetry_set_consent", { agreed }),
+  /** Crash reports saved on this machine, newest first. */
+  listCrashLogs: () => invoke<CrashLog[]>("list_crash_logs"),
+  openCrashFolder: () => invoke<void>("open_crash_folder"),
+  logUiError: (message: string, stack: string) => invoke<void>("log_ui_error", { message, stack }),
+  issueReport: () => invoke<IssueReport>("issue_report"),
+  openIssue: (url: string) => invoke<void>("open_issue", { url }),
   /** Writes only if `text` is valid and the file still has mtime `expected` (unless `force`). */
   devRulesSave: (text: string, expected: number | null, force = false) =>
     invoke<RulesSave>("dev_rules_save", { text, expected, force }),

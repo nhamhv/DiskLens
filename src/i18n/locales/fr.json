@@ -19,11 +19,11 @@
   },
   "speed": {
     "low": "CPU réduit",
-    "lowHint": "2 threads en arrière-plan sur les cœurs économes : le plus lent, à peine perceptible",
     "balanced": "Équilibré",
-    "balancedHint": "La moitié des cœurs du processeur",
     "fast": "Rapide",
-    "fastHint": "Tous les cœurs : le plus rapide, les ventilateurs peuvent s’emballer"
+    "min": "Minimum",
+    "high": "Élevé",
+    "threads": "{{count}} sur {{cpus}} threads"
   },
   "welcome": {
     "tagline": "Découvrez ce qui occupe de l’espace sur votre Mac.",
@@ -44,7 +44,11 @@
     "fdaDevHint": "Lancé avec <code>npm run tauri dev</code> ? Accordez l’accès à l’app qui l’a démarré (VS Code / iTerm). Pour l’app compilée, cliquez sur <b>+</b> et choisissez <code>DiskLens.app</code>.",
     "taglineOther": "Voyez ce qui occupe l’espace de votre ordinateur.",
     "photos": "Photos",
-    "dropHint": "Astuce : déposez un dossier sur cette fenêtre pour l’analyser."
+    "dropHint": "Astuce : déposez un dossier sur cette fenêtre pour l’analyser.",
+    "cacheInMemoryHint": "En mémoire — perdue à la fermeture de l'app",
+    "cacheDisk": "Disque",
+    "cacheRam": "RAM",
+    "cacheRamNotice": "Le disque est presque plein : certaines analyses ne sont gardées qu'en RAM et seront perdues à la fermeture de l'app."
   },
   "disk": {
     "backHint": "Retour à l’accueil (arrête l’analyse)",
@@ -142,7 +146,11 @@
     "trashNote_many": "Vous pouvez les restaurer depuis la corbeille. Les <b>{{size}}</b> ne sont libérés qu’une fois la corbeille vidée.",
     "trashNote_other": "Vous pouvez les restaurer depuis la corbeille. Les <b>{{size}}</b> ne sont libérés qu’une fois la corbeille vidée.",
     "riskyWarning_one": "{{count, number}} élément ({{size}}) contient des données d’app, des e-mails, des photos, des fichiers système ou un historique Git. Le supprimer peut casser une app ou perdre des données.",
-    "riskyWarning_other": "{{count, number}} éléments ({{size}}) contiennent des données d’app, des e-mails, des photos, des fichiers système ou un historique Git. Les supprimer peut casser des apps ou perdre des données."
+    "riskyWarning_other": "{{count, number}} éléments ({{size}}) contiennent des données d’app, des e-mails, des photos, des fichiers système ou un historique Git. Les supprimer peut casser des apps ou perdre des données.",
+    "showLess": "Afficher moins",
+    "skipHour": "Ne plus demander pendant 1 heure",
+    "sortName": "Nom",
+    "sortSize": "Taille"
   },
   "apps": {
     "title": "Applications",
@@ -294,7 +302,13 @@
     "editorHint": "JSON avec commentaires. Un id intégré ne change que les champs indiqués ; un nouvel id ajoute une règle.",
     "rulesChangedOutside": "Le fichier de règles a changé depuis cette analyse.",
     "inYourFile": "Dans votre fichier",
-    "scannedAgo": "analysé {{when}}"
+    "scannedAgo": "analysé {{when}}",
+    "filterEco": "Écosystème",
+    "filterSafety": "Sécurité",
+    "filterAge": "Ancienneté",
+    "allLevels": "Tous les niveaux",
+    "resetFilters": "Réinitialiser",
+    "nSelected": "{{count}} sélectionnés"
   },
   "kinds": {
     "trash": "Corbeille",
@@ -447,6 +461,42 @@
     "selected_other": "{{count, number}} sélectionnées · {{size}}",
     "quickLookHint": "Espace pour l’aperçu · double-clic pour ouvrir",
     "deleteForever": "Supprimer définitivement…",
-    "moveToTrash": "Placer dans la corbeille…"
+    "moveToTrash": "Placer dans la corbeille…",
+    "view": "Voir la photo",
+    "sharp": "Miniatures nettes",
+    "sharpHint": "Miniatures plus grandes, nettes sur les écrans haute résolution (chargement un peu plus lent)",
+    "openExternal": "Ouvrir avec l'app par défaut",
+    "close": "Fermer",
+    "prev": "Précédente",
+    "next": "Suivante"
+  },
+  "cacheMode": {
+    "label": "Enregistrer les analyses dans",
+    "auto": "Auto",
+    "disk": "Disque",
+    "memory": "Mémoire",
+    "autoHint": "Disque, ou mémoire si le disque est presque plein",
+    "diskHint": "Toujours enregistrer sur le disque",
+    "memoryHint": "En mémoire seulement ; perdues à la fermeture de l'app"
+  },
+  "report": {
+    "button": "Signaler un problème",
+    "title": "Signaler un problème",
+    "description": "Cela ouvre un ticket GitHub prérempli. DiskLens n'envoie rien lui-même : lisez le texte ci-dessous et envoyez-le vous-même.",
+    "preview": "Texte ajouté au ticket",
+    "crashCount": "Journaux de plantage enregistrés sur cet ordinateur : {{count}}",
+    "noCrashes": "Aucun plantage enregistré.",
+    "openFolder": "Afficher les journaux de plantage",
+    "copy": "Copier le texte",
+    "copied": "Copié",
+    "openIssue": "Ouvrir le ticket GitHub",
+    "attachHint": "Si DiskLens a planté, joignez au ticket le fichier le plus récent du dossier des journaux de plantage."
+  },
+  "stats": {
+    "title": "Partager un compteur de lancements anonyme ?",
+    "description": "DiskLens peut compter combien de personnes l'ouvrent chaque jour. Il n'envoie que la version de l'app et votre système, jamais de noms de fichiers, de chemins ni de résultats d'analyse. Les journaux de plantage restent sur votre ordinateur et ne sont jamais envoyés.",
+    "allow": "Partager",
+    "deny": "Non merci",
+    "toggle": "Partager un compteur de lancements anonyme"
   }
 }

@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DiskLens</title>
+<style>
+  :root {
+    --bg: #1b120d; --bg2: #2c1b12; --fg: #f3e7dc; --muted: #b9a393; --accent: #eab58a; --line: #ffffff1a;
+    --safe: #6fcf97; --warn: #f2994a;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: #0d0806; color: var(--fg); overflow: hidden;
+    font: 16px/1.5 "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  /* The stage is 1600×900 and scaled to fit the window, so every slide looks the same at any size. */
+  #stage { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform-origin: 0 0; }
+  .slide { position: absolute; inset: 0; display: none; padding: 72px 88px;
+    background: radial-gradient(1200px 700px at 78% 8%, var(--bg2), var(--bg)); }
+  .slide.on { display: grid; animation: in .35s ease; }
+  @keyframes in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  .split { grid-template-columns: 430px 1fr; gap: 56px; align-items: center; }
+  .kicker { color: var(--accent); font-size: 18px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; }
+  h1 { font-size: 92px; line-height: 1; letter-spacing: -.03em; }
+  h2 { font-size: 46px; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 22px; }
+  p.lead { font-size: 30px; color: var(--muted); margin-top: 18px; max-width: 900px; }
+  ul { list-style: none; padding: 0; display: grid; gap: 14px; }
+  li { color: var(--muted); font-size: 21px; padding-left: 26px; position: relative; }
+  li::before { content: ""; position: absolute; left: 0; top: .62em; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  li b { color: var(--fg); font-weight: 600; }
+  .tag { display: inline-block; margin-top: 26px; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 15px; color: var(--muted); }
+
+  .win { border-radius: 14px; overflow: hidden; border: 1px solid #ffffff22; background: #120b07;
+    box-shadow: 0 40px 90px -20px #000c, 0 0 0 1px #0008; }
+  .win .bar { height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 14px; background: #24160e; border-bottom: 1px solid var(--line); }
+  .win .bar i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
+  .win .bar i:nth-child(2) { background: #febc2e; } .win .bar i:nth-child(3) { background: #28c840; }
+  .win .bar span { margin: 0 auto; transform: translateX(-24px); font-size: 13px; color: var(--muted); }
+  .win img { display: block; width: 100%; height: auto; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+  .pair .win { overflow: hidden; }
+  .pair .win img { aspect-ratio: 1280 / 820; object-fit: cover; transform: scale(var(--zoom, 1.5)); }
+
+  .title { grid-template-columns: 560px 1fr; gap: 56px; align-items: center; }
+  .title h1 { font-size: 84px; }
+  .title p.lead { font-size: 26px; }
+  .title img.logo { width: 120px; height: 120px; margin-bottom: 24px; filter: drop-shadow(0 0 40px #e0a06a55); }
+  .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 44px; }
+  .card { border: 1px solid var(--line); border-radius: 16px; padding: 26px; background: #ffffff08; }
+  .card h3 { font-size: 24px; margin-bottom: 8px; }
+  .card p { color: var(--muted); font-size: 18px; }
+  .end { align-content: center; }
+  code { background: #ffffff12; border-radius: 6px; padding: 1px 8px; font-size: .9em; }
+
+  #bar { position: fixed; left: 0; bottom: 0; height: 3px; background: var(--accent); width: 0; transition: width .3s; }
+  #count { position: fixed; right: 18px; bottom: 12px; font-size: 13px; color: var(--muted); }
+  #hint { position: fixed; left: 18px; bottom: 12px; font-size: 13px; color: #b9a39380; }
+  @media print { html, body { overflow: visible; background: #fff; } #stage { position: static; transform: none !important; width: auto; height: auto; }
+    .slide { position: relative; display: grid; height: 900px; break-after: page; } #bar, #count, #hint { display: none; } }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <section class="slide title">
+    <div>
+      <img class="logo" src="../src-tauri/icons/128x128@2x.png" alt="">
+      <h1>DiskLens</h1>
+      <p class="lead">See what is taking up space on your Mac or Linux PC, and clean it up safely.</p>
+      <span class="tag">Open source · Tauri + Rust + React · Apache-2.0</span>
+    </div>
+    <div class="win"><div class="bar"><i></i><i></i><i></i><span>DiskLens — Home</span></div><img src="screenshots/disk.jpg" alt="Treemap of the home folder"></div>
+  </section>
+
+  <section class="slide split">
+    <div>
+      <div class="kicker">Start</div>
+      <h2>One place to begin</h2>
+      <ul>
+        <li><b>Home or Whole Disk</b> in one click, or drop any folder on the window.</li>
+        <li><b>Previous scans open instantly.</b> Rescan only when you want to.</li>
+        <li><b>Hidden space</b> (purgeable, Time Machine snapshots) is shown too.</li>
+        <li><b>Speed modes</b> from Minimum to Fast keep your Mac responsive.</li>
+      </ul>
+    </div>
+    <div class="win"><div class="bar"><i></i><i></i><i></i><span>DiskLens</span></div><img src="screenshots/welcome.jpg" alt="Start screen"></div>
+  </section>
+
+  <section class="slide split">
+    <div>
+      <div class="kicker">Scan</div>
+      <h2>Every tile stays visible</h2>
+      <ul>
+        <li><b>Treemap or bubbles</b> of any folder. Click a tile to drill in.</li>
+        <li>Small folders don't vanish next to a <b>200 GB</b> one.</li>
+        <li><b>Colour by kind or by safety.</b> Safe-to-clean folders carry a ✨.</li>
+        <li><b>Low CPU mode</b> scans at background priority.</li>
+      </ul>
+    </div>
+    <div class="win"><div class="bar"><i></i><i></i><i></i><span>DiskLens — Home</span></div><img src="screenshots/disk.jpg" alt="Treemap of the home folder"></div>
+  </section>
+
+  <section class="slide split">
+    <div>
+      <div class="kicker">Drill down</div>
+      <h2>From the disk to the culprit</h2>
+      <ul>
+        <li>Open <b>Library</b> and see caches, Xcode data and containers by size.</li>
+        <li><b>Right-click</b> to reveal in Finder, copy the path or delete.</li>
+        <li>Each item shows how much it <b>grew</b> since the last scan.</li>
+      </ul>
+    </div>
+    <div class="win"><div class="bar"><i></i><i></i><i></i><span>DiskLens — Library</span></div><img src="screenshots/disk-library.jpg" alt="Library folder"></div>
+  </section>
+
+  <section class="slide split">
+    <div>
+      <div class="kicker">Cleanup</div>
+      <h2>Safe to clean, in one list</h2>
+      <ul>
+        <li>Caches, build output, <code>node_modules</code>, DerivedData: <b>67 GB</b> in this sample.</li>
+        <li>Safety comes from an <b>allowlist</b>, so unknown folders are never marked safe.</li>
+        <li><b>Move to Trash</b> asks once. <b>Delete permanently</b> asks twice. System folders are always refused.</li>
+      </ul>
+    </div>
+    <div class="win"><div class="bar"><i></i><i></i><i></i><span>DiskLens — Cleanup</span></div><img src="screenshots/cleanup.jpg" alt="Cleanup tab"></div>
+  </section>
+
+  <section class="slide split">
+    <div>
+      <div class="kicker">Largest files</div>
+      <h2>Find the big ones</h2>
+      <ul>
+        <li>The biggest files and folders under the current folder, largest first.</li>
+        <li>Filter to <b>files untouched for a year or more</b>.</li>
+        <li>Select several and remove them in one go.</li>
+      </ul>
+    </div>
+    <div class="win"><div class="bar"><i></i><i></i><i></i><span>DiskLens — Largest</span></div><img src="screenshots/largest.jpg" alt="Largest files"></div>
+  </section>
+
+  <section class="slide split">
+    <div>
+      <div class="kicker">Changes</div>
+      <h2>What grew since last time</h2>
+      <ul>
+        <li>Every folder shows a <b>delta</b> against the previous scan.</li>
+        <li>The Changes tab lists the biggest growth and shrinkage first.</li>
+        <li>Quickly spot the cache or container that ate 8 GB this week.</li>
+      </ul>
+    </div>
+    <div class="win"><div class="bar"><i></i><i></i><i></i><span>DiskLens — Changes</span></div><img src="screenshots/changes.jpg" alt="Changes tab"></div>
+  </section>
+
+  <section class="slide split">
+    <div>
+      <div class="kicker">Developer</div>
+      <h2>Clean up after your toolchain</h2>
+      <ul>
+        <li><b>Projects:</b> <code>node_modules</code>, <code>target</code>, <code>.venv</code>, Pods, build folders.</li>
+        <li><b>SDKs, package caches, editors, AI tools</b> and old versions in their own tabs.</li>
+        <li>Each item is <b>Safe</b>, <b>Rebuild</b> (with the command to bring it back) or <b>Caution</b>.</li>
+        <li><b>Git worktrees</b> are checked for uncommitted work. A rules file lets you add your own.</li>
+      </ul>
+    </div>
+    <div class="win"><div class="bar"><i></i><i></i><i></i><span>DiskLens — Developer</span></div><img src="screenshots/developer.jpg" alt="Developer cleanup"></div>
+  </section>
+
+  <section class="slide split">
+    <div>
+      <div class="kicker">Photos</div>
+      <h2>Keep the best shot</h2>
+      <ul>
+        <li><b>Blurry photos</b>, <b>screenshots</b> and <b>near-identical shots</b>.</li>
+        <li>In each similar group the sharpest, largest photo is the one to keep.</li>
+        <li>Everything is analysed on your Mac. Nothing is uploaded.</li>
+      </ul>
+    </div>
+    <div class="win"><div class="bar"><i></i><i></i><i></i><span>DiskLens — Photos</span></div><img src="screenshots/photos.jpg" alt="Photos"></div>
+  </section>
+
+  <section class="slide split">
+    <div>
+      <div class="kicker">Applications · macOS</div>
+      <h2>The real size of an app</h2>
+      <ul>
+        <li>Bundle plus its <b>~/Library data</b>, last used date and version.</li>
+        <li><b>App Store and Sparkle</b> update checks.</li>
+        <li>Uninstall, or reset an app's data. Data folders are matched by exact bundle id only.</li>
+      </ul>
+    </div>
+    <div class="win"><div class="bar"><i></i><i></i><i></i><span>DiskLens — Applications</span></div><img src="screenshots/apps.jpg" alt="Applications"></div>
+  </section>
+
+  <section class="slide" style="align-content:center">
+    <div class="kicker">Privacy</div>
+    <h2>Your files never leave your computer</h2>
+    <div class="pair">
+      <div>
+        <div class="win"><div class="bar"><i></i><i></i><i></i><span>First launch</span></div><img style="--zoom:1.9" src="screenshots/consent.jpg" alt="Launch count question"></div>
+        <ul style="margin-top:22px"><li><b>Opt-in launch count.</b> App version and OS only. No paths, no scan data.</li></ul>
+      </div>
+      <div>
+        <div class="win"><div class="bar"><i></i><i></i><i></i><span>Report a problem</span></div><img style="--zoom:1.4" src="screenshots/report.jpg" alt="Report a problem"></div>
+        <ul style="margin-top:22px"><li><b>Crash logs stay local.</b> You read the text and submit the GitHub issue yourself.</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide end">
+    <div class="kicker">DiskLens</div>
+    <h2>Fast, open source, careful with your files</h2>
+    <div class="cols">
+      <div class="card"><h3>macOS &amp; Linux</h3><p>macOS and Ubuntu Linux. Windows is planned.</p></div>
+      <div class="card"><h3>Safe by design</h3><p>One guarded delete path, two-step permanent delete, protected system folders.</p></div>
+      <div class="card"><h3>Get it</h3><p>Download from GitHub Releases, or build it: <code>npm start</code>.</p></div>
+    </div>
+    <p class="lead" style="font-size:22px">github.com/nhamhv/DiskLens · all figures in these slides are sample data</p>
+  </section>
+
+</div>
+<div id="hint">← → to move · F fullscreen</div>
+<div id="count"></div>
+<div id="bar"></div>
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  const stage = document.getElementById("stage");
+  let i = Math.min(slides.length - 1, Math.max(0, (parseInt(location.hash.slice(1), 10) || 1) - 1));
+
+  function fit() {
+    const s = Math.min(innerWidth / 1600, innerHeight / 900);
+    stage.style.transform = `scale(${s}) translate(-50%, -50%)`;
+    stage.style.left = "50%"; stage.style.top = "50%";
+  }
+  function show(n) {
+    i = Math.min(slides.length - 1, Math.max(0, n));
+    slides.forEach((el, k) => el.classList.toggle("on", k === i));
+    document.getElementById("count").textContent = `${i + 1} / ${slides.length}`;
+    document.getElementById("bar").style.width = `${((i + 1) / slides.length) * 100}%`;
+    history.replaceState(null, "", `#${i + 1}`);
+  }
+  addEventListener("resize", fit);
+  addEventListener("keydown", (e) => {
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) show(i + 1);
+    else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) show(i - 1);
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+    else if (e.key.toLowerCase() === "f") document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+  });
+  addEventListener("click", (e) => show(e.clientX > innerWidth / 2 ? i + 1 : i - 1));
+  let x0 = null;
+  addEventListener("touchstart", (e) => (x0 = e.touches[0].clientX));
+  addEventListener("touchend", (e) => { if (x0 !== null) { const d = e.changedTouches[0].clientX - x0; if (Math.abs(d) > 40) show(i + (d < 0 ? 1 : -1)); x0 = null; } });
+  fit(); show(i);
+</script>
+</body>
+</html>

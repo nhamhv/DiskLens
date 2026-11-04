@@ -7,7 +7,8 @@ export const TABS: Tab[] = ["projects", "sdk", "caches", "ide", "ai", "old", "wo
 export type Age = 0 | 30 | 90 | 365;
 
 export interface Filters {
-  eco: string | null;
+  /** Ecosystems to show; empty means all. */
+  eco: string[];
   safety: Safety[];
   /** Untouched for at least this many days; 0 = any. */
   age: Age;
@@ -48,7 +49,7 @@ export const idleDays = (since: number) => (now() - since) / DAY;
 export const selectable = (i: DevItem) => !i.viewOnly && i.running.length === 0;
 
 export function itemPasses(i: DevItem, f: Filters, activeAt: number) {
-  return (!f.eco || i.eco === f.eco) && f.safety.includes(i.safety) && (f.age === 0 || idleDays(activeAt) >= f.age);
+  return (!f.eco.length || f.eco.includes(i.eco)) && f.safety.includes(i.safety) && (f.age === 0 || idleDays(activeAt) >= f.age);
 }
 
 /** Projects with the items that pass the filters (projects with none are dropped). */
@@ -63,7 +64,7 @@ export function visibleWorktrees(r: DevReport, f: Filters): DevProject[] {
     (p) =>
       p.worktree &&
       f.safety.includes("caution") &&
-      (!f.eco || p.ecos.includes(f.eco)) &&
+      (!f.eco.length || p.ecos.some((e) => f.eco.includes(e))) &&
       (f.age === 0 || idleDays(p.lastActive) >= f.age),
   );
 }

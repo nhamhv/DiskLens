@@ -3,7 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Copy, Focus, ImageOff, Monitor, Plus, RefreshCw, Sparkles, Square, Trash2, X, type LucideIcon } from "lucide-react";
+import { ArrowLeft, Check, Copy, Eye, Focus, ImageOff, Monitor, Plus, RefreshCw, Sparkles, Square, Trash2, X, type LucideIcon } from "lucide-react";
 import { api } from "@/lib/api";
 import type { Entry, Photo, PhotoProgress, PhotoReport, Speed } from "@/lib/types";
 import { formatBytes, formatCount, timeAgo } from "@/lib/format";
@@ -11,10 +11,12 @@ import { platform } from "@/lib/platform";
 import { cn } from "@/lib/utils";
 import { runDelete } from "@/lib/delete";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DeleteDialog, type DeleteRequest } from "@/components/DeleteDialog";
 import { tildify } from "@/features/dev/model";
+import { PhotoViewer } from "./PhotoViewer";
 
 type Tab = "similar" | "blurry" | "screenshots";
 const TABS: { id: Tab; icon: LucideIcon }[] = [
@@ -23,33 +25,37 @@ const TABS: { id: Tab; icon: LucideIcon }[] = [
   { id: "screenshots", icon: Monitor },
 ];
 const FOLDERS_KEY = "photos.folders";
-const THUMB = 160;
+const HD_KEY = "photos.hd";
+/** Thumbnail edge in pixels: the sharp one stays crisp on high-DPI screens, the small one is quicker to make. */
+const THUMB = { sd: 160, hd: 360 };
 
 const defaultFolders = (home: string) => ["Pictures", "Desktop", "Downloads"].map((d) => `${home}/${d}`);
 
-/** Thumbnails already made this session, by path. */
+/** Thumbnails already made this session, by size and path. */
 const thumbs = new Map<string, string | null>();
 
 /** Loads its thumbnail only once it scrolls into view. */
-function Thumb({ path }: { path: string }) {
+function Thumb({ path, px }: { path: string; px: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [src, setSrc] = useState(thumbs.get(path));
+  const id = `${px}:${path}`;
+  const [src, setSrc] = useState(thumbs.get(id));
   useEffect(() => {
-    if (thumbs.has(path) || !ref.current) return;
+    setSrc(thumbs.get(id));
+    if (thumbs.has(id) || !ref.current) return;
     const io = new IntersectionObserver(([e]) => {
       if (!e.isIntersecting) return;
       io.disconnect();
       api
-        .photoThumb(path, THUMB)
+        .photoThumb(path, px)
         .catch(() => null)
         .then((s) => {
-          thumbs.set(path, s);
+          thumbs.set(id, s);
           setSrc(s);
         });
     });
     io.observe(ref.current);
     return () => io.disconnect();
-  }, [path]);
+  }, [path, px, id]);
   return (
     <div ref={ref} className="flex size-full items-center justify-center bg-muted">
       {src ? (
@@ -65,11 +71,13 @@ interface TileProps {
   photo: Photo;
   checked: boolean;
   keep?: boolean;
+  px: number;
   onToggle(): void;
   onFocus(): void;
+  onView(): void;
 }
 
-function Tile({ photo, checked, keep, onToggle, onFocus }: TileProps) {
+function Tile({ photo, checked, keep, px, onToggle, onFocus, onView }: TileProps) {
   const { t } = useTranslation();
   return (
     <button
@@ -82,7 +90,7 @@ function Tile({ photo, checked, keep, onToggle, onFocus }: TileProps) {
       onFocus={onFocus}
       onDoubleClick={() => api.openPath(photo.path).catch(() => {})}
     >
-      <Thumb path={photo.path} />
+      <Thumb path={photo.path} px={px} />
       <span
         className={cn(
           "absolute top-1.5 left-1.5 flex size-5 items-center justify-center rounded-md border bg-background/80",
@@ -91,8 +99,20 @@ function Tile({ photo, checked, keep, onToggle, onFocus }: TileProps) {
       >
         {checked && <Check className="size-3.5" />}
       </span>
+      <span
+        role="button"
+        title={t("photos.view")}
+        className="absolute top-1.5 right-1.5 flex size-5 items-center justify-center rounded-md bg-background/80 opacity-0 hover:bg-background group-hover:opacity-100"
+        onClick={(e) => {
+          e.stopPropagation();
+          onView();
+        }}
+        onDoubleClick={(e) => e.stopPropagation()}
+      >
+        <Eye className="size-3.5" />
+      </span>
       {keep && (
-        <span className="absolute top-1.5 right-1.5 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-medium text-white">
+        <span className="absolute top-1.5 right-8 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-medium text-white">
           {t("photos.keep")}
         </span>
       )}
@@ -119,6 +139,9 @@ export function PhotosView({ home, speed, onBack }: { home: string; speed: Speed
   const [confirm, setConfirm] = useState<DeleteRequest | null>(null);
   const [deleting, setDeleting] = useState(false);
   const focused = useRef<string | null>(null);
+  const [viewing, setViewing] = useState<string | null>(null);
+  const [hd, setHd] = useState(() => localStorage.getItem(HD_KEY) !== "0");
+  const px = hd ? THUMB.hd : THUMB.sd;
 
   // `home` arrives asynchronously on a cold start.
   useEffect(() => {
@@ -137,17 +160,22 @@ export function PhotosView({ home, speed, onBack }: { home: string; speed: Speed
     };
   }, []);
 
-  // Space previews the focused photo, like Finder.
+  // Space previews the focused photo, like Finder: Quick Look where there is one, our viewer elsewhere.
   useEffect(() => {
-    if (!platform.quickLook) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== " " || !focused.current || confirm) return;
+      if (e.key !== " " || !focused.current || confirm || viewing) return;
       e.preventDefault();
-      api.quickLook([focused.current]).catch(() => {});
+      if (platform.quickLook) api.quickLook([focused.current]).catch(() => {});
+      else setViewing(focused.current);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [confirm]);
+  }, [confirm, viewing]);
+
+  const toggleHd = () => {
+    setHd(!hd);
+    localStorage.setItem(HD_KEY, hd ? "0" : "1");
+  };
 
   const scan = async (dirs: string[]) => {
     if (!dirs.length) return;
@@ -181,6 +209,8 @@ export function PhotosView({ home, speed, onBack }: { home: string; speed: Speed
   }, [report]);
 
   const listOf = (id: Tab): Photo[] => (!report ? [] : id === "similar" ? report.similar.flat() : report[id]);
+  const viewList = listOf(tab);
+  const viewIndex = viewList.findIndex((p) => p.path === viewing);
   const sizeOf = (id: Tab) => listOf(id).reduce((s, p) => s + p.size, 0);
   const picked = [...selected].map((p) => all.get(p)).filter((p): p is Photo => !!p);
   const pickedSize = picked.reduce((s, p) => s + p.size, 0);
@@ -229,8 +259,10 @@ export function PhotosView({ home, speed, onBack }: { home: string; speed: Speed
         photo={p}
         keep={keepFirst && i === 0}
         checked={selected.has(p.path)}
+        px={px}
         onToggle={() => toggle(p.path)}
         onFocus={() => (focused.current = p.path)}
+        onView={() => setViewing(p.path)}
       />
     ));
 
@@ -321,6 +353,10 @@ export function PhotosView({ home, speed, onBack }: { home: string; speed: Speed
             </Button>
           ))}
           <span className="flex-1" />
+          <label className="flex cursor-pointer items-center gap-1.5" title={t("photos.sharpHint")}>
+            <Checkbox checked={hd} onCheckedChange={toggleHd} />
+            {t("photos.sharp")}
+          </label>
           <span title={report.truncated ? t("photos.truncated") : undefined} className={cn(report.truncated && "text-amber-400")}>
             {t("photos.scanned", { count: report.scanned })}
           </span>
@@ -352,6 +388,17 @@ export function PhotosView({ home, speed, onBack }: { home: string; speed: Speed
         </footer>
       )}
 
+      {viewing && (
+        <PhotoViewer
+          photos={viewList}
+          index={Math.max(0, viewIndex)}
+          onIndex={(i) => {
+            setViewing(viewList[i].path);
+            focused.current = viewList[i].path;
+          }}
+          onClose={() => setViewing(null)}
+        />
+      )}
       <DeleteDialog request={confirm} busy={deleting} onCancel={() => setConfirm(null)} onConfirm={doDelete} />
     </div>
   );

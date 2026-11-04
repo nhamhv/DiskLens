@@ -32,6 +32,7 @@ DiskLens has two parts that talk through Tauri commands and events:
 | `src/i18n/` | i18next setup and one JSON file per language. |
 | `src-tauri/src/lib.rs` | Registers the commands. Nothing else. |
 | `src-tauri/src/state.rs` | `AppState` (the current scan tree), the `Speed` → thread-pool mapping, cache helpers. |
+| `src-tauri/src/diagnostics.rs` | Opt-in launch count (Aptabase), crash logs written to disk, and the prefilled GitHub issue text. |
 | `src-tauri/src/scanner.rs` | The parallel directory walker. |
 | `src-tauri/src/cache.rs` | Saves and loads scan results. |
 | `src-tauri/src/platform/` | Everything OS-specific: `mod.rs` (shared types, `statvfs`), `macos.rs`, `linux.rs`. Each OS file exposes the same functions. |
@@ -98,6 +99,8 @@ All OS-specific code lives in `src-tauri/src/platform/`. `platform/mod.rs` re-ex
 
 After each scan, the tree is saved with bincode to the app cache directory: `~/Library/Caches/com.nhamhv.disklens/`. Next to each file there is a small JSON sidecar. The start screen can list previous scans by reading only the sidecars.
 
+Where the tree goes depends on `CacheMode` (set from the start screen through `set_cache_mode`): `disk`, `memory`, or `auto`. `auto` saves to disk unless the volume would be left with under 1 GiB free (`cache::low_on_space`), then keeps the encoded tree in `AppState::mem_caches` (newest 3, lost when the app closes). A failed disk write falls back to memory too, and the stale disk copy of that root is removed to free space. `state::cached_tree`, `cached_node`, `list_caches`, `forget_cache` and `clear_caches` look in both places; memory entries have `inMemory: true` in `ScanMeta`.
+
 When a delete or rescan edits the tree, a background thread re-saves it. A mutex keeps two saves from writing at the same time.
 
 ## Deleting
@@ -143,3 +146,11 @@ The confirmation is enforced in the UI (`DeleteDialog`):
 - Kinds (`lib/kinds.ts`) decide a tile's icon and its colour in "colour by type" mode. The kind `id` is also the translation key under `kinds.*`. The "safe to clean" hint and "colour by safety" mode use the backend's `safety` (`lib/safety.ts`).
 - The treemap and bubbles views (`Treemap.tsx`, `Bubbles.tsx`) share `useTiles`, `useBox` and `Tooltip`. The chosen layout and colour mode are kept in localStorage.
 - `lib/types.ts` must match the `#[serde(rename_all = "camelCase")]` structs in Rust.
+
+## Diagnostics and privacy
+
+`diagnostics.rs` does three things, all with paths scrubbed (`scrub` turns the home folder into `~` and other `/Users/x` or `/home/x` into `~user`):
+
+- **Crash logs.** A panic hook, and errors thrown in the UI (`window.onerror`, unhandled rejections, sent through `log_ui_error`), write `crash-<time>-<kind>.log` to `<app data dir>/crashes/`. The newest 20 are kept. They are never sent anywhere. Native crashes (segfaults) are not caught.
+- **Report a problem.** `ReportIssue` shows the text (version, OS, newest crash excerpt) and opens a prefilled GitHub issue; the user reads and submits it. `open_issue` only accepts the project's own issue URL.
+- **Launch count.** One `app_open` event per launch to Aptabase, sent with `curl`, only after the user agreed (`StatsConsent`, stored in `telemetry.json` next to the crash folder). It carries the app version and OS, no id that persists, and never paths or scan data. The key is read at build time from `APTABASE_APP_KEY` (`APTABASE_HOST` for a self-hosted server). Builds without a key send nothing and never ask.
